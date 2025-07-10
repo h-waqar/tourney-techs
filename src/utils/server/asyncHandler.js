@@ -1,17 +1,22 @@
-// /utils/server/asyncHandler.js
-export const asyncHandler = (fn) => async (req, res) => {
-  try {
-    await fn(req, res);
-  } catch (error) {
-    console.error("Unhandled API Error:", error);
+// ✅ src/utils/server/asyncHandler.js
+import { NextResponse } from "next/server";
 
-    const status = error.statusCode || 500;
-    res.status(status).json({
-      success: false,
-      message: error.message || "Internal Server Error",
-      errors: error.errors || [],
-    });
-  }
+export const asyncHandler = (handler) => {
+  return async (req) => {
+    try {
+      return await handler(req);
+    } catch (error) {
+      const status = error.statusCode || 500;
+      return NextResponse.json(
+        {
+          success: false,
+          message: error.message || "Internal Server Error",
+          errors: error.errors || [],
+        },
+        { status }
+      );
+    }
+  };
 };
 
 /*
