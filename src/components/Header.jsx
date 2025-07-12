@@ -27,7 +27,7 @@ export default function Header() {
           {/* Auth Buttons */}
           <ul className="flex items-center gap-4">
             <li>
-              <Link href="/login">
+              <Link href="/auth/login">
                 <span
                   className="px-5 py-2 rounded-xl font-medium transition cursor-pointer"
                   style={{
