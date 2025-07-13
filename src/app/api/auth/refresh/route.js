@@ -16,7 +16,7 @@ export const POST = asyncHandler(async () => {
   await connectDB();
 
   // ✅ Get refreshToken from cookies
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const incomingRefreshToken = cookieStore.get("refreshToken")?.value;
 
   if (!incomingRefreshToken) {
