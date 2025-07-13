@@ -1,6 +1,5 @@
 import { Schema, model, models } from "mongoose";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -92,7 +91,7 @@ const UserSchema = new Schema(
 
     role: {
       type: String,
-      enum: ["player", "admin", "editor"],
+      enum: ["player", "admin", "manager"],
       default: "player",
     },
   },
