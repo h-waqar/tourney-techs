@@ -2,7 +2,7 @@
 import jwt from "jsonwebtoken";
 // import dotenv from "dotenv";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+// import { NextResponse } from "next/server";
 
 // dotenv.config();
 
@@ -102,8 +102,9 @@ export function setAuthCookies(response, accessToken, refreshToken) {
  * @param {string} accessToken
  * @param {string} refreshToken
  */
-export function clearAuthCookies() {
-  const cookieStore = cookies();
+export async function clearAuthCookies() {
+  const cookieStore = await cookies();
+
   cookieStore.delete("accessToken");
   cookieStore.delete("refreshToken");
 }
