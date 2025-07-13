@@ -6,7 +6,9 @@ import { asyncHandler } from "@/utils/server/asyncHandler";
 import {
   generateAccessToken,
   generateRefreshToken,
+  setAuthCookies,
 } from "@/utils/server/tokens";
+import { NextResponse } from "next/server";
 
 /**
  * Basic string sanitization (trims and escapes input)
@@ -127,6 +129,9 @@ export const POST = asyncHandler(async (req) => {
       { refreshToken },
       { validateBeforeSave: false }
     );
+
+    // After generating tokens:
+    // setAuthCookies(accessToken, refreshToken);
   } catch (err) {
     throw new ApiError(500, "Failed to update refreshToken in db.", err);
   }
@@ -135,14 +140,15 @@ export const POST = asyncHandler(async (req) => {
     "-refreshToken -password -accessToken"
   );
 
-  return Response.json(
+  const res = NextResponse.json(
     new ApiResponse(
       201,
       {
         user: safeUser,
-        accessToken,
       },
       "User registered successfully"
     )
   );
+
+  return setAuthCookies(res, accessToken, refreshToken);
 });

@@ -111,27 +111,5 @@ UserSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-// Generate JWT access token
-UserSchema.methods.generateAccessToken = function () {
-  const payload = {
-    _id: this._id,
-    email: this.email,
-    username: this.username,
-  };
-
-  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
-  });
-};
-
-// Generate JWT refresh token
-UserSchema.methods.generateRefreshToken = function () {
-  const payload = { _id: this._id };
-
-  return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
-  });
-};
-
 // 🧠 Prevent model overwrite in development
 export const User = models.User || model("User", UserSchema);
