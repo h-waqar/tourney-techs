@@ -48,7 +48,7 @@ export default function Header() {
               </Link>
             </li>
             <li>
-              <Link href="/signup">
+              <Link href="/auth/signup">
                 <span
                   className="px-5 py-2 rounded-xl font-medium transition cursor-pointer"
                   style={{
