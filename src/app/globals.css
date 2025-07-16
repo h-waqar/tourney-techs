@@ -28,10 +28,12 @@
   /* 🧱 Borders & Cards */
   --border-color: #364153;
   --card-background: #101828;
+  --card-hover: #0a111d;
 
   /* ✍️ Typography */
   --font-sans: var(--font-geist-sans, "Inter", sans-serif);
   --font-mono: var(--font-geist-mono, monospace);
+
 }
 
 /* ========= THEME OVERRIDE (DARK MODE) ========= */
@@ -67,4 +69,30 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/* 
+{
+  
+} */
+
+.scrollbar::-webkit-scrollbar {
+  width: 6px;
+ 
+}
+
+/* Track */
+.scrollbar::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+/* Handle */
+.scrollbar::-webkit-scrollbar-thumb {
+  background: var(--card-background);
+   border-radius: 10px;
+}
+
+/* Handle on hover */
+.scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--card-hover);
 }
