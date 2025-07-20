@@ -7,6 +7,8 @@ import Loader from "@/components/Loader";
 
 import { toast } from "react-hot-toast";
 
+import CitySelector from "@/components/ui/signup/CitySelector";
+
 export default function SignUpPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -70,7 +72,6 @@ export default function SignUpPage() {
   return (
     <>
       {loading && <Loader />} {/* Show loader while processing */}
-
       <main
         className="min-h-screen flex items-center justify-center px-4 py-6"
         style={{
@@ -92,13 +93,21 @@ export default function SignUpPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* First Name & Last Name */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="First Name" value={firstName} onChange={setFirstName} />
-              <Input label="Last Name" value={lastName} onChange={setLastName} />
+              <Input
+                label="First Name"
+                value={firstName}
+                onChange={setFirstName}
+              />
+              <Input
+                label="Last Name"
+                value={lastName}
+                onChange={setLastName}
+              />
             </div>
 
             {/* Username & Email */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Username" value={username} onChange={setUsername} />
+              <Input label="Nickname" value={username} onChange={setUsername} />
               <Input
                 label="Email"
                 value={email}
@@ -126,38 +135,46 @@ export default function SignUpPage() {
             {/* Phone & City */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input label="Phone" value={phone} onChange={setPhone} />
-              <Input label="City" value={city} onChange={setCity} />
+
+            <div className="">
+                <label className="block mb-2 text-sm font-medium">Gender</label>
+              <select
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                required
+                className="w-full px-4 py-2.5 rounded-md border"
+                style={{
+                  backgroundColor: "var(--secondary-color)",
+                  borderColor: "var(--border-color)",
+                  color: "var(--foreground)",
+                }}
+              >
+                <option value="" disabled>
+                  Select gender
+                </option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+              {/* <Input label="City" value={city} onChange={setCity} /> */}
             </div>
 
             {/* State Code & Gender */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> */}
+              <CitySelector
+                stateCode={stateCode}
+                setStateCode={setStateCode}
+                city={city}
+                setCity={setCity}
+              />
+              {/* <Input
                 label="State Code"
                 value={stateCode}
                 onChange={setStateCode}
-              />
-              <div>
-                <label className="block mb-2 text-sm font-medium">Gender</label>
-                <select
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value)}
-                  required
-                  className="w-full px-4 py-2.5 rounded-md border"
-                  style={{
-                    backgroundColor: "var(--secondary-color)",
-                    borderColor: "var(--border-color)",
-                    color: "var(--foreground)",
-                  }}
-                >
-                  <option value="" disabled>
-                    Select gender
-                  </option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-            </div>
+              /> */}
+              
+            {/* </div> */}
 
             {/* Submit Button */}
             <button

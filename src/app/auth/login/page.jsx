@@ -8,7 +8,6 @@ import Loader from "@/components/Loader";
 import { toast } from "react-hot-toast";
 
 export default function LoginPage() {
-  const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -28,7 +27,6 @@ export default function LoginPage() {
       const res = await api.post("/api/auth/login", {
         email,
         password,
-        username: userName,
       });
 
       const accessToken = res.data.data.accessToken;
@@ -71,25 +69,6 @@ export default function LoginPage() {
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="userName" className="block mb-2 text-sm font-medium">
-                User Name
-              </label>
-              <input
-                type="text"
-                id="userName"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                className="w-full px-4 py-2 rounded-md border focus:outline-none focus:ring-2"
-                style={{
-                  backgroundColor: "var(--secondary-color)",
-                  color: "var(--foreground)",
-                  borderColor: "var(--border-color)",
-                  caretColor: "var(--accent-color)",
-                }}
-              />
-            </div>
-
             <div>
               <label htmlFor="email" className="block mb-2 text-sm font-medium">
                 Email

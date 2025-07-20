@@ -58,6 +58,15 @@ export default function DashboardSidebar({ isOpen, onClose }) {
                 <span>Dashboard</span>
               </Link>
             </li>
+              <li>
+              <Link
+                href="/dashboard/profile"
+                className="flex items-center gap-3 px-4 py-2 rounded hover:bg-[var(--card-hover)] transition"
+              >
+                <Users className="w-5 h-5" />
+                <span>Profile</span>
+              </Link>
+            </li>
           </ul>
         </nav>
       </aside>
