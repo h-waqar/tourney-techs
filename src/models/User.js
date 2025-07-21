@@ -53,6 +53,8 @@ const UserSchema = new Schema(
         },
         message: (props) => `${props.value} is not a valid phone number!`,
       },
+      unique: true,
+      sparse: true, // Allows multiple users without phone numbers
     },
 
     gender: {

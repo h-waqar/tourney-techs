@@ -1,10 +1,9 @@
-// ✅ src/utils/server/asyncHandler.js
 import { NextResponse } from "next/server";
 
 export const asyncHandler = (handler) => {
-  return async (req) => {
+  return async (req, context) => {
     try {
-      return await handler(req);
+      return await handler(req, context);
     } catch (error) {
       console.error("🔥 Unhandled API Error:", error);
 
@@ -16,7 +15,7 @@ export const asyncHandler = (handler) => {
           message: error.message || "Internal Server Error",
           errors: error.errors || [],
         },
-        { status } // ✅ This sets the status code correctly
+        { status }
       );
     }
   };

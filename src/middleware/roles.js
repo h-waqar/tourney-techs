@@ -1,19 +1,17 @@
-import { requireAuth } from "./auth";
+// import { requireAuth } from "./auth";
 import { ApiError } from "@/utils/server/ApiError";
 
 /**
  * Enforces that user has one of the allowed roles.
+ * @param {user} userInfo - The user information object.
  * @param {string|string[]} roles - Single role or array of allowed roles.
  */
-export async function requireRole(roles = []) {
-  const decoded = await requireAuth(); // verifies and returns { _id, email, username }
-
+export async function requireRole(userInfo, roles = []) {
   const allowedRoles = Array.isArray(roles) ? roles : [roles];
 
-  // Fetch full user from DB to check role
   const { User } = await import("@/models/User");
-  const user = await User.findById(decoded._id).select(
-    "-password -refreshToken"
+  const user = await User.findById(userInfo._id).select(
+    "-password -refreshToken -__v"
   );
 
   if (!user || !allowedRoles.includes(user.role)) {
