@@ -1,7 +1,13 @@
 "use client";
 
+import api from "@/utils/axios";
 import { useState } from "react";
 import Link from "next/link";
+import Loader from "@/components/Loader";
+
+import { toast } from "react-hot-toast";
+
+import CitySelector from "@/components/ui/signup/CitySelector";
 
 export default function SignUpPage() {
   const [firstName, setFirstName] = useState("");
@@ -14,6 +20,8 @@ export default function SignUpPage() {
   const [stateCode, setStateCode] = useState("");
   const [phone, setPhone] = useState("");
   const [gender, setGender] = useState("");
+
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +36,7 @@ export default function SignUpPage() {
       !stateCode ||
       !dob
     ) {
-      alert("❌ Please fill in all required fields.");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
@@ -46,71 +54,90 @@ export default function SignUpPage() {
     };
 
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      setLoading(true);
 
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.message || "Signup failed");
+      const res = await api.post("/api/auth/register", data);
 
-      alert("✅ Account created!");
+      toast.success("Account created!");
       window.location.href = "/auth/login";
-    } catch (err) {
-      alert(err.message || "❌ Something went wrong");
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message || "Something went wrong";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <main
-      className="min-h-screen flex items-center justify-center px-4 py-6"
-      style={{
-        backgroundColor: "var(--background)",
-        color: "var(--foreground)",
-      }}
-    >
-      <div
-        className="w-full max-w-2xl p-8 rounded-xl shadow-md"
-        style={{ backgroundColor: "var(--card-background)" }}
+    <>
+      {loading && <Loader />} {/* Show loader while processing */}
+      <main
+        className="min-h-screen flex items-center justify-center px-4 py-6"
+        style={{
+          backgroundColor: "var(--background)",
+          color: "var(--foreground)",
+        }}
       >
-        <h1
-          className="text-3xl font-bold mb-6 text-center"
-          style={{ color: "var(--accent-color)" }}
+        <div
+          className="w-full max-w-2xl p-8 rounded-xl shadow-md"
+          style={{ backgroundColor: "var(--card-background)" }}
         >
-          Create Your Account
-        </h1>
+          <h1
+            className="text-3xl font-bold mb-6 text-center"
+            style={{ color: "var(--accent-color)" }}
+          >
+            Create Your Account
+          </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* First Name & Last Name */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="First Name" value={firstName} onChange={setFirstName} />
-            <Input label="Last Name" value={lastName} onChange={setLastName} />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* First Name & Last Name */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="First Name"
+                value={firstName}
+                onChange={setFirstName}
+              />
+              <Input
+                label="Last Name"
+                value={lastName}
+                onChange={setLastName}
+              />
+            </div>
 
-          {/* Username & Email */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="Username" value={username} onChange={setUsername} />
-            <Input label="Email" value={email} onChange={setEmail} type="email" />
-          </div>
+            {/* Username & Email */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input label="Nickname" value={username} onChange={setUsername} />
+              <Input
+                label="Email"
+                value={email}
+                onChange={setEmail}
+                type="email"
+              />
+            </div>
 
-          {/* Password & DOB */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="Password" value={password} onChange={setPassword} type="password" />
-            <Input label="Date of Birth" value={dob} onChange={setDob} type="date" />
-          </div>
+            {/* Password & DOB */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Password"
+                value={password}
+                onChange={setPassword}
+                type="password"
+              />
+              <Input
+                label="Date of Birth"
+                value={dob}
+                onChange={setDob}
+                type="date"
+              />
+            </div>
 
-          {/* Phone & City */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="Phone" value={phone} onChange={setPhone} />
-            <Input label="City" value={city} onChange={setCity} />
-          </div>
+            {/* Phone & City */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input label="Phone" value={phone} onChange={setPhone} />
 
-          {/* State Code */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="State Code" value={stateCode} onChange={setStateCode} />
-            <div>
-              <label className="block mb-2 text-sm font-medium">Gender</label>
+            <div className="">
+                <label className="block mb-2 text-sm font-medium">Gender</label>
               <select
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
@@ -130,32 +157,56 @@ export default function SignUpPage() {
                 <option value="other">Other</option>
               </select>
             </div>
-          </div>
+              {/* <Input label="City" value={city} onChange={setCity} /> */}
+            </div>
 
-          <button
-            type="submit"
-            className="w-full py-3 rounded-md font-semibold transition"
-            style={{
-              backgroundColor: "var(--accent-color)",
-              color: "var(--background)",
-            }}
-          >
-            Sign Up
-          </button>
-        </form>
+            {/* State Code & Gender */}
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> */}
+              <CitySelector
+                stateCode={stateCode}
+                setStateCode={setStateCode}
+                city={city}
+                setCity={setCity}
+              />
+              {/* <Input
+                label="State Code"
+                value={stateCode}
+                onChange={setStateCode}
+              /> */}
+              
+            {/* </div> */}
 
-        <p className="mt-6 text-center text-sm" style={{ color: "#9CA3AF" }}>
-          Already have an account?{" "}
-          <Link href="/auth/login" className="hover:underline" style={{ color: "var(--accent-color)" }}>
-            Log In
-          </Link>
-        </p>
-      </div>
-    </main>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-md font-semibold transition"
+              style={{
+                backgroundColor: "var(--accent-color)",
+                color: "var(--background)",
+              }}
+            >
+              {loading ? "Creating Account..." : "Sign Up"}
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-sm" style={{ color: "#9CA3AF" }}>
+            Already have an account?{" "}
+            <Link
+              href="/auth/login"
+              className="hover:underline"
+              style={{ color: "var(--accent-color)" }}
+            >
+              Log In
+            </Link>
+          </p>
+        </div>
+      </main>
+    </>
   );
 }
 
-// 🔧 Reusable Input Field Component
+// 🔧 Reusable Input Component
 function Input({ label, value, onChange, type = "text" }) {
   return (
     <div>

@@ -63,16 +63,10 @@ export default function TournamentListing() {
   return (
 
   
-    <main
-      className="min-h-screen py-16 px-4 md:px-8"
-      style={{
-        backgroundColor: "var(--background)",
-        color: "var(--foreground)",
-      }}
-    >
+    <>
       <div className="max-w-7xl mx-auto">
         <h1
-          className="text-4xl font-extrabold text-center mb-12"
+          className="text-4xl font-extrabold text-center mb-6"
           style={{ color: "var(--accent-color)" }}
         >
           🎮 Explore Tournaments
@@ -88,7 +82,7 @@ export default function TournamentListing() {
         />
 
         {/* Tournament Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {paginatedTournaments.map((tournament) => (
             <TournamentCard
               key={tournament.id}
@@ -134,6 +128,6 @@ export default function TournamentListing() {
           </button>
         </div>
       </div>
-    </main>
+    </>
   );
 }
