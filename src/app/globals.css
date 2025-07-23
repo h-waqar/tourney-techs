@@ -78,7 +78,6 @@ body {
 
 .scrollbar::-webkit-scrollbar {
   width: 6px;
- 
 }
 
 /* Track */
@@ -94,5 +93,26 @@ body {
 
 /* Handle on hover */
 .scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--card-hover);
+}
+
+/* x */
+.scrollbar-x::-webkit-scrollbar {
+  height: 6px !important;
+}
+
+/* Track */
+.scrollbar-x::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+/* Handle */
+.scrollbar-x::-webkit-scrollbar-thumb {
+  background: var(--card-background);
+   border-radius: 10px;
+}
+
+/* Handle on hover */
+.scrollbar-x::-webkit-scrollbar-thumb:hover {
   background: var(--card-hover);
 }

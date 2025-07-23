@@ -5,14 +5,25 @@ import { useState } from "react";
 import DashboardNavbar from "@/components/ui/dashboard/DashboardNavbar";
 import DashboardSidebar from "@/components/ui/dashboard/DashboardSidebar";
 
-import { LayoutDashboard, Users , LogOut} from "lucide-react";
+import { LayoutDashboard, Users, Settings, LogOut, BadgePlus } from "lucide-react";
+
 
 // Change this to adminNavItems if needed
-const userNavItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/profile", label: "Profile", icon: Users },
+const adminNavItems = [
+  { href: "/admin", label: "Admin Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Switch To User", icon: LayoutDashboard },
+  { href: "/admin/users", label: "Manage Users", icon: Users },
+  { href: "/admin/create-tournament", label: "Create Tournament", icon: BadgePlus },
+  {
+    label: "Settings",
+    icon: Settings,
+    children: [
+      { href: "/admin/settings/profile", label: "Profile Settings" },
+    ],
+  },
   { href: "/logout", label: "Logout", icon: LogOut },
 ];
+
 
 export default function DashboardLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -23,7 +34,7 @@ export default function DashboardLayout({ children }) {
       <DashboardSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
-        navItems={userNavItems} // Pass this dynamically
+        navItems={adminNavItems} // Pass this dynamically
       />
 
       {/* Content */}

@@ -1,14 +1,21 @@
 import Link from "next/link";
-import { X, LayoutDashboard, Users, Settings, LogOut } from "lucide-react";
-
+import { X } from "lucide-react";
 import Image from "next/image";
+
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 const logo = "/img/logo.jpg";
 
-export default function DashboardSidebar({ isOpen, onClose }) {
+export default function DashboardSidebar({ isOpen, onClose, navItems }) {
+  const [openMenu, setOpenMenu] = useState(null);
+
+  const toggleSubmenu = (label) => {
+    setOpenMenu(openMenu === label ? null : label);
+  };
+
   return (
     <>
-      {/* Overlay for mobile and tablet */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
@@ -16,7 +23,6 @@ export default function DashboardSidebar({ isOpen, onClose }) {
         ></div>
       )}
 
-      {/* Sidebar */}
       <aside
         className={`fixed z-50 lg:static top-0 left-0 h-full w-64 transform transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
@@ -26,10 +32,9 @@ export default function DashboardSidebar({ isOpen, onClose }) {
           color: "var(--foreground)",
         }}
       >
-        {/* Header with close button */}
         <div
-          className="flex justify-between items-center h-16  px-4 py-4"
-          style={{ borderBottom: "1px solid var(--background)" }}
+          className="flex justify-between items-center h-16 px-4 py-4"
+          style={{ borderBottom: "1px solid var(--card-hover)" }}
         >
           <div className="flex items-center gap-3">
             <Image
@@ -46,27 +51,55 @@ export default function DashboardSidebar({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="px-2 py-4 space-y-1">
-          <ul>
-            <li>
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-3 px-4 py-2 rounded hover:bg-[var(--card-hover)] transition"
-              >
-                <LayoutDashboard className="w-5 h-5" />
-                <span>Dashboard</span>
-              </Link>
-            </li>
-              <li>
-              <Link
-                href="/dashboard/profile"
-                className="flex items-center gap-3 px-4 py-2 rounded hover:bg-[var(--card-hover)] transition"
-              >
-                <Users className="w-5 h-5" />
-                <span>Profile</span>
-              </Link>
-            </li>
+        {/* Dynamic Navigation */}
+        <nav className="py-4 px-3">
+          <ul className="space-y-1">
+            {navItems.map((item) => (
+              <li key={item.label} className="list-none">
+                {item.children ? (
+                  <>
+                    <button
+                      onClick={() => toggleSubmenu(item.label)}
+                      className="flex items-center justify-between w-full px-2 py-2 hover:bg-[var(--card-hover)] rounded"
+                    >
+                      <span className="flex items-center gap-2">
+                        <item.icon size={18} />
+                        {item.label}
+                      </span>
+                      {openMenu === item.label ? (
+                        <ChevronUp size={16} />
+                      ) : (
+                        <ChevronDown size={16} />
+                      )}
+                    </button>
+
+                    {openMenu === item.label && (
+                      <ul className="ml-6 mt-1 space-y-1">
+                        {item.children.map((subItem) => (
+                          <li key={subItem.label}>
+                            <Link
+                              href={subItem.href}
+                              className="block text-sm px-2 py-1 rounded hover:bg-[var(--card-hover)]"
+                              onClick={() => setOpenMenu(null)}
+                            >
+                              {subItem.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className="flex items-center gap-2 px-2 py-2 hover:bg-[var(--card-hover)] rounded"
+                  >
+                    <item.icon size={18} />
+                    {item.label}
+                  </Link>
+                )}
+              </li>
+            ))}
           </ul>
         </nav>
       </aside>

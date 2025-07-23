@@ -12,6 +12,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
     "@tailwindcss/postcss": "^4.1.11",
+    "@tanstack/react-table": "^8.21.3",
     "@uploadthing/react": "^7.3.2",
     "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
