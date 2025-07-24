@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@g-loot/react-tournament-brackets": "^1.0.31-rc",
     "@hookform/resolvers": "^5.1.1",
     "@tailwindcss/postcss": "^4.1.11",
     "@tanstack/react-table": "^8.21.3",

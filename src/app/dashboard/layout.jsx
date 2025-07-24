@@ -11,6 +11,7 @@ import { LayoutDashboard, Users , LogOut} from "lucide-react";
 const userNavItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/profile", label: "Profile", icon: Users },
+  { href: "/dashboard/matches-overview", label: "Matches", icon: Users },
   { href: "/logout", label: "Logout", icon: LogOut },
 ];
 
