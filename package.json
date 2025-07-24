@@ -23,11 +23,13 @@
     "country-state-city": "^3.2.1",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.0",
+    "formidable": "^3.5.4",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.525.0",
     "mongoose": "^8.16.2",
     "next": "15.3.5",
     "next-auth": "^4.24.11",
+    "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.60.0",
@@ -37,6 +39,8 @@
     "zustand": "^5.0.6"
   },
   "devDependencies": {
+    "@types/node": "24.1.0",
+    "@types/react": "19.1.8",
     "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",

@@ -31,6 +31,10 @@ const GameSchema = new Schema(
     icon: {
       type: String, // Cloudinary or external image URL
     },
+
+    coverImage: {
+      type: String, // Cloudinary or external image URL
+    },
   },
   { timestamps: true }
 );
@@ -44,4 +48,5 @@ export const Game = models.Game || model("Game", GameSchema);
 //   "description": "5v5 tactical FPS developed by Riot Games",
 //   "rulesUrl": "https://mytourney.com/rules/valorant",
 //   "icon": "https://cdn.mytourney.com/icons/valorant.png"
+//   "banner": "https://cdn.mytourney.com/banner/valorant.png"
 // }

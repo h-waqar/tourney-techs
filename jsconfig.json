@@ -5,5 +5,5 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src", "src/app/api/auth/register/route.js"]
+  "include": ["src"]
 }
