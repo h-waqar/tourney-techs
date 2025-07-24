@@ -10,17 +10,21 @@ import { requireRole } from "@/middleware/roles";
 import { parseForm } from "@/utils/server/parseForm";
 import { uploadOnCloudinary } from "@/utils/server/cloudinary";
 
+// Needed for formidable to parse form-data (with files)
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-// ✅ GET /api/tournaments/:id → View a single tournament
-export const GET = asyncHandler(async (_, { params }) => {
+// ✅ GET /api/tournaments/:id → View tournament by ID
+export const GET = asyncHandler(async (_, context) => {
   await connectDB();
 
-  const tournament = await Tournament.findById(params.id);
+  const params = await Promise.resolve(context.params); // force async context
+
+  const { id } = params;
+  const tournament = await Tournament.findById(id);
 
   if (!tournament) {
     throw new ApiError(404, "Tournament not found.");
@@ -30,18 +34,19 @@ export const GET = asyncHandler(async (_, { params }) => {
 });
 
 // ✅ PATCH /api/tournaments/:id → Update tournament (admin only)
-export const PATCH = asyncHandler(async (req, { params }) => {
+export const PATCH = asyncHandler(async (req, context) => {
   await connectDB();
 
   const authUser = await requireAuth();
   await requireRole(authUser, "admin");
 
+  const { id } = context.params;
   const { fields, files } = await parseForm(req);
   const updates = {};
 
+  // List of updatable fields
   const allowedFields = [
     "name",
-    "qr",
     "type",
     "teamBased",
     "startDate",
@@ -51,15 +56,16 @@ export const PATCH = asyncHandler(async (req, { params }) => {
     "location",
     "description",
     "status",
-    "bannerUrl",
   ];
 
   for (const key of allowedFields) {
     if (fields[key]) {
-      updates[key] = fields[key].toString();
+      updates[key] =
+        key === "teamBased" ? fields[key][0] === "true" : fields[key][0];
     }
   }
 
+  // Handle file uploads (banner, QR)
   const bannerPath = Array.isArray(files.bannerUrl)
     ? files.bannerUrl[0]?.filepath
     : files.bannerUrl?.filepath;
@@ -81,7 +87,7 @@ export const PATCH = asyncHandler(async (req, { params }) => {
     updates.qr = qrUpload?.secure_url;
   }
 
-  const tournament = await Tournament.findByIdAndUpdate(params.id, updates, {
+  const tournament = await Tournament.findByIdAndUpdate(id, updates, {
     new: true,
   });
 
@@ -93,13 +99,15 @@ export const PATCH = asyncHandler(async (req, { params }) => {
 });
 
 // ✅ DELETE /api/tournaments/:id → Delete tournament (admin only)
-export const DELETE = asyncHandler(async (_, { params }) => {
+export const DELETE = asyncHandler(async (_, context) => {
   await connectDB();
 
   const authUser = await requireAuth();
   await requireRole(authUser, "admin");
 
-  const deleted = await Tournament.findByIdAndDelete(params.id);
+  const { id } = context.params;
+  const deleted = await Tournament.findByIdAndDelete(id);
+
   if (!deleted) throw new ApiError(404, "Tournament not found.");
 
   return Response.json(

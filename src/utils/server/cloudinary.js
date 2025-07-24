@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs/promises"; // use async fs for better compatibility
+import QRCode from "qrcode";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -11,7 +12,7 @@ cloudinary.config({
 export const uploadOnCloudinary = async (localFilePath, folder = "uploads") => {
   try {
     if (!localFilePath) {
-      console.warn("No file path provided for Cloudinary upload.");
+      console.warn("⚠️ No file path provided for Cloudinary upload.");
       return null;
     }
 
@@ -54,5 +55,41 @@ export const deleteFromCloudinary = async (publicId) => {
   } catch (error) {
     console.error("❌ Cloudinary delete failed:", error.message);
     throw error;
+  }
+};
+
+// ✅ Upload QR code image (buffer-based, no file)
+export const uploadQrToCloudinary = async (
+  urlToEncode,
+  folder = "tournaments/qr"
+) => {
+  try {
+    const qrBuffer = await QRCode.toBuffer(urlToEncode, { type: "png" });
+
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder,
+          resource_type: "image",
+          format: "png",
+        },
+        (err, result) => {
+          if (err) {
+            console.error(
+              "❌ QR Cloudinary stream upload failed:",
+              err.message
+            );
+            return reject(err);
+          }
+          console.log("✅ QR code uploaded:", result.secure_url);
+          resolve(result.secure_url);
+        }
+      );
+
+      stream.end(qrBuffer);
+    });
+  } catch (error) {
+    console.error("❌ Failed to generate/upload QR:", error.message);
+    throw new Error("QR upload failed");
   }
 };
