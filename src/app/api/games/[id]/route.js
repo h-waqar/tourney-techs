@@ -7,10 +7,12 @@ import { ApiResponse } from "@/utils/server/ApiResponse";
 import { ApiError } from "@/utils/server/ApiError";
 
 // ✅ GET /api/games/:id → Get one game by ID
-export const GET = asyncHandler(async (_req, { params }) => {
+export const GET = asyncHandler(async (_req, context) => {
   await connectDB();
 
-  const game = await Game.findById(params.id).lean();
+  const { id } = await Promise.resolve(context.params);
+
+  const game = await Game.findById(id).lean();
 
   if (!game) throw new ApiError(404, "Game not found");
 
@@ -18,12 +20,14 @@ export const GET = asyncHandler(async (_req, { params }) => {
 });
 
 // ✅ PUT /api/games/:id → Update a game
-export const PUT = asyncHandler(async (req, { params }) => {
+export const PUT = asyncHandler(async (req, context) => {
   await connectDB();
 
   const updates = await req.json();
 
-  const updatedGame = await Game.findByIdAndUpdate(params.id, updates, {
+  const { id } = await Promise.resolve(context.params);
+
+  const updatedGame = await Game.findByIdAndUpdate(id, updates, {
     new: true,
     runValidators: true,
   }).lean();
@@ -36,10 +40,12 @@ export const PUT = asyncHandler(async (req, { params }) => {
 });
 
 // ✅ DELETE /api/games/:id → Delete a game
-export const DELETE = asyncHandler(async (_req, { params }) => {
+export const DELETE = asyncHandler(async (_req, context) => {
   await connectDB();
 
-  const deletedGame = await Game.findByIdAndDelete(params.id);
+  const { id } = await Promise.resolve(context.params);
+
+  const deletedGame = await Game.findByIdAndDelete(id);
 
   if (!deletedGame) throw new ApiError(404, "Game not found");
 
