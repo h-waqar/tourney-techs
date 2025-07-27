@@ -1,21 +1,34 @@
-"use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function GameForm({ onSubmit, initialData = {}, onClose }) {
-  const safeInitialData = initialData || {};
-
   const [formData, setFormData] = useState({
-    name: safeInitialData.name || "",
-    genre: safeInitialData.genre || "",
-    platform: safeInitialData.platform || "",
-    description: safeInitialData.description || "",
-    rulesUrl: safeInitialData.rulesUrl || "",
-    icon: safeInitialData.icon || "",
-    coverImage: safeInitialData.coverImage || "",
+    name: "",
+    genre: "",
+    platform: "",
+    description: "",
+    rulesUrl: "",
+    icon: "",
+    coverImage: "",
   });
 
   const [icon, setIcon] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
+
+  // 🔁 Update form data when initialData changes
+  useEffect(() => {
+    setFormData({
+      name: initialData?.name || "",
+      genre: initialData?.genre || "",
+      platform: initialData?.platform || "",
+      description: initialData?.description || "",
+      rulesUrl: initialData?.rulesUrl || "",
+      icon: initialData?.icon || "",
+      coverImage: initialData?.coverImage || "",
+    });
+    setIcon(null);
+    setCoverImage(null);
+  }, [initialData]);
+
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -31,20 +44,20 @@ export default function GameForm({ onSubmit, initialData = {}, onClose }) {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const data = new FormData();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  const data = new FormData();
 
-    Object.entries(formData).forEach(([key, value]) => {
-      data.append(key, value);
-    });
+  Object.entries(formData).forEach(([key, value]) => {
+    data.append(key, value);
+  });
 
-    if (icon) data.append("icon", icon);
-    if (coverImage) data.append("coverImage", coverImage);
+  if (icon) data.append("icon", icon);
+  if (coverImage) data.append("coverImage", coverImage);
 
-    onSubmit(data);
-    if (onClose) onClose();
-  };
+  await onSubmit(data); // 🛠️ Fix: await the result
+  if (onClose) onClose();
+};
 
   return (
     <form

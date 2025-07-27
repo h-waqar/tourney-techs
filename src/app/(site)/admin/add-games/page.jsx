@@ -5,6 +5,8 @@ import api from "@/utils/axios";
 import GameForm from "@/components/ui/admin/games/GameForm";
 import GamesTable from "@/components/ui/admin/games/GameTable";
 
+import { toast } from "react-hot-toast";
+
 export default function GamesPage() {
   const [games, setGames] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -24,32 +26,47 @@ export default function GamesPage() {
   }, []);
 
   const handleAddOrUpdate = async (data) => {
-    try {
-      if (editGame) {
-        // Add PUT logic if you have update route
-        console.warn("Update API route not implemented.");
-      } else {
-        const res = await api.post("/api/games", data);
-        if (res.status === 201) {
-          fetchGames();
-        }
+  try {
+    if (editGame) {
+      const res = await api.put(`/api/games/${editGame._id}`, data);
+      if (res.status === 200) {
+        toast.success("Game updated successfully");
+        await fetchGames();        // ✅ WAIT for data to refresh
+        setShowForm(false);
+        setEditGame(null);
       }
-    } catch (err) {
-      console.error("Game save failed", err);
+    } else {
+      const res = await api.post("/api/games", data);
+      if (res.status === 201) {
+        toast.success("Game added successfully");
+        await fetchGames();        // ✅ WAIT here too
+        setShowForm(false);
+      }
     }
-  };
+  } catch (err) {
+    console.error("Game save failed", err);
+    toast.error(err.response?.data?.message || "Something went wrong.");
+  }
+};
 
-  const handleDelete = async (id) => {
-    try {
-      // Add DELETE route if needed
-      console.warn("Delete API route not implemented.");
-    } catch (err) {
-      console.error("Delete failed", err);
-    }
-  };
+
+ const handleDelete = async (id) => {
+  try {
+    const res = await api.delete(`/api/games/${id}`);
+    toast.success("Game deleted successfully");
+    await fetchGames();
+
+
+  } catch (err) {
+    console.error("Delete error:", err);
+    toast.error(err.response?.data?.message || "Something went wrong.");
+  }
+};
+
+
 
   return (
-    <div className="min-h-screen p-6 ">
+    <div className="min-h-screen">
       <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-[color:var(--accent-color)]">Games</h1>
