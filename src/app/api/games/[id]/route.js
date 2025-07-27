@@ -1,16 +1,16 @@
 // src/app/api/games/[id]/route.js
 
-import { connectDB } from "@/lib/mongoose";
 import { Game } from "@/models/Game";
 import { asyncHandler } from "@/utils/server/asyncHandler";
 import { ApiResponse } from "@/utils/server/ApiResponse";
 import { ApiError } from "@/utils/server/ApiError";
+import { requireAdmin } from "@/utils/server/roleGuards";
 
-// ✅ GET /api/games/:id → Get one game by ID
+// GET /api/games/:id
 export const GET = asyncHandler(async (_req, context) => {
-  await connectDB();
+  const params = await context.params;
 
-  const { id } = await Promise.resolve(context.params);
+  const { id } = params;
 
   const game = await Game.findById(id).lean();
 
@@ -19,13 +19,15 @@ export const GET = asyncHandler(async (_req, context) => {
   return Response.json(new ApiResponse(200, game, "Game fetched"));
 });
 
-// ✅ PUT /api/games/:id → Update a game
+// PUT /api/games/:id
 export const PUT = asyncHandler(async (req, context) => {
-  await connectDB();
+  await requireAdmin();
 
   const updates = await req.json();
 
-  const { id } = await Promise.resolve(context.params);
+  const params = await context.params;
+
+  const { id } = params;
 
   const updatedGame = await Game.findByIdAndUpdate(id, updates, {
     new: true,
@@ -39,11 +41,13 @@ export const PUT = asyncHandler(async (req, context) => {
   );
 });
 
-// ✅ DELETE /api/games/:id → Delete a game
+// DELETE /api/games/:id
 export const DELETE = asyncHandler(async (_req, context) => {
-  await connectDB();
+  await requireAdmin();
 
-  const { id } = await Promise.resolve(context.params);
+  const params = await context.params;
+
+  const { id } = params;
 
   const deletedGame = await Game.findByIdAndDelete(id);
 

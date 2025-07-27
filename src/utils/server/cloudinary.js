@@ -1,3 +1,5 @@
+// src\utils\server\cloudinary.js
+
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs/promises"; // use async fs for better compatibility
 import QRCode from "qrcode";

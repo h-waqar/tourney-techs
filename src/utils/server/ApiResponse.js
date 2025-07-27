@@ -1,4 +1,4 @@
-// /utils/server/ApiResponse.js
+// src\utils\server\ApiResponse.js
 export class ApiResponse {
   constructor(statusCode, data, message = "Success") {
     this.statusCode = statusCode;

@@ -24,7 +24,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      const res = await api.post("/api/auth/login", {
+      const res = await api.post("/api/login", {
         email,
         password,
       });
@@ -46,7 +46,6 @@ export default function LoginPage() {
   return (
     <>
       {loading && <Loader />} {/* ✅ Show loader during request */}
-
       <main
         className="min-h-screen flex items-center justify-center"
         style={{
@@ -90,7 +89,10 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block mb-2 text-sm font-medium">
+              <label
+                htmlFor="password"
+                className="block mb-2 text-sm font-medium"
+              >
                 Password
               </label>
               <input
@@ -124,7 +126,8 @@ export default function LoginPage() {
               }
               disabled={loading} // 🟡 Optional: disable button while loading
             >
-              {loading ? "Signing in..." : "Sign In"} {/* 🟡 Optional text change */}
+              {loading ? "Signing in..." : "Sign In"}{" "}
+              {/* 🟡 Optional text change */}
             </button>
           </form>
 

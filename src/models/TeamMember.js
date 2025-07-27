@@ -7,24 +7,14 @@ const TeamMemberSchema = new Schema(
       ref: "Tournament",
       required: true,
     },
-
-    team: {
-      type: Schema.Types.ObjectId,
-      ref: "Team",
-      required: true,
-    },
-
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+    game: { type: Schema.Types.ObjectId, ref: "Game", required: true },
+    team: { type: Schema.Types.ObjectId, ref: "Team", required: true },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true }
 );
 
-// 💡 Composite index: One user per tournament
-TeamMemberSchema.index({ tournament: 1, user: 1 }, { unique: true });
+TeamMemberSchema.index({ tournament: 1, game: 1, user: 1 }, { unique: true });
 
 export const TeamMember =
   models.TeamMember || model("TeamMember", TeamMemberSchema);

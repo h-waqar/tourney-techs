@@ -8,7 +8,7 @@ export default function DashboardNavbar({ onMenuClick }) {
    useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await api.get("/api/auth/me"); // adjust this if your route differs
+        const res = await api.get("/api/me"); // adjust this if your route differs
         setUser(res.data.data.user);
       } catch (err) {
         console.error("Failed to fetch user:", err);

@@ -2,24 +2,19 @@ import { Schema, model, models } from "mongoose";
 
 const TeamSchema = new Schema(
   {
-    name: {
-      type: String,
-      required: [true, "Team name is required."],
-      unique: true,
-      trim: true,
-    },
-
-    logo: {
-      type: String, // URL or Cloudinary path
-    },
-
-    createdBy: {
+    name: { type: String, required: true, trim: true },
+    logo: { type: String },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    tournament: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Tournament",
       required: true,
     },
+    game: { type: Schema.Types.ObjectId, ref: "Game", required: true },
   },
   { timestamps: true }
 );
+
+TeamSchema.index({ tournament: 1, game: 1, name: 1 }, { unique: true });
 
 export const Team = models.Team || model("Team", TeamSchema);

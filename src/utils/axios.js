@@ -12,7 +12,7 @@ let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
@@ -34,14 +34,11 @@ api.interceptors.request.use((config) => {
 
 // Handle 401 errors and refresh accessToken
 api.interceptors.response.use(
-  res => res,
+  (res) => res,
   async (error) => {
     const originalRequest = error.config;
 
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry
-    ) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       if (isRefreshing) {
@@ -52,14 +49,18 @@ api.interceptors.response.use(
             originalRequest.headers["Authorization"] = `Bearer ${token}`;
             return api(originalRequest);
           })
-          .catch(err => Promise.reject(err));
+          .catch((err) => Promise.reject(err));
       }
 
       isRefreshing = true;
 
       try {
         // Call your refresh token API
-        const res = await axios.post("/api/auth/refresh", {}, { withCredentials: true });
+        const res = await axios.post(
+          "/api/refresh",
+          {},
+          { withCredentials: true }
+        );
 
         const newAccessToken = res.data.data.accessToken;
 
@@ -67,7 +68,8 @@ api.interceptors.response.use(
         localStorage.setItem("accessToken", newAccessToken);
 
         // Update Axios default header
-        api.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
+        api.defaults.headers.common["Authorization"] =
+          `Bearer ${newAccessToken}`;
 
         processQueue(null, newAccessToken);
 

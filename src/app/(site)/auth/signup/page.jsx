@@ -56,7 +56,7 @@ export default function SignUpPage() {
     try {
       setLoading(true);
 
-      const res = await api.post("/api/auth/register", data);
+      const res = await api.post("/api/register", data);
 
       toast.success("Account created!");
       window.location.href = "/auth/login";
@@ -193,7 +193,7 @@ export default function SignUpPage() {
           <p className="mt-6 text-center text-sm" style={{ color: "#9CA3AF" }}>
             Already have an account?{" "}
             <Link
-              href="/auth/login"
+              href="login"
               className="hover:underline"
               style={{ color: "var(--accent-color)" }}
             >

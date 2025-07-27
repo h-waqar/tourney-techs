@@ -19,7 +19,7 @@ export default function CallToAction() {
           Compete with other players, track your progress, and climb the leaderboard in exciting tournaments!
         </p>
         <Link
-          href="/login"
+          href="/auth/login"
           className="px-6 py-3 rounded-lg font-semibold transition"
           style={{
             backgroundColor: 'var(--secondary-color)',

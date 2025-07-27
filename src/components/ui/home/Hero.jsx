@@ -23,7 +23,7 @@ export default function Hero() {
           </p>
 
           <Link
-            href="/login"
+            href="/auth/login"
             className="font-semibold py-3 px-6 rounded-lg transition duration-300 inline-block"
             style={{
               backgroundColor: "var(--accent-color)",

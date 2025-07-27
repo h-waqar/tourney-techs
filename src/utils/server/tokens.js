@@ -1,10 +1,7 @@
-// /utils/server/tokens.js
-import jwt from "jsonwebtoken";
-// import dotenv from "dotenv";
-import { cookies } from "next/headers";
-// import { NextResponse } from "next/server";
+// src\utils\server\tokens.js
 
-// dotenv.config();
+import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
 
 const ACCESS_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET;

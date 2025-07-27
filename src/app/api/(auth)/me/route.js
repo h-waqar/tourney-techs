@@ -1,7 +1,7 @@
 import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
+import { requireAuth } from "@/utils/server/auth";
 import { asyncHandler } from "@/utils/server/asyncHandler";
-import { requireAuth } from "@/middleware/auth";
 import { ApiResponse } from "@/utils/server/ApiResponse";
 import { ApiError } from "@/utils/server/ApiError";
 

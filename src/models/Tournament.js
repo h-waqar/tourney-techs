@@ -1,92 +1,52 @@
 import { Schema, model, models } from "mongoose";
 
-const TournamentSchema = new Schema(
+const TournamentGameSchema = new Schema(
   {
-    name: {
-      type: String,
-      required: [true, "Tournament name is required."],
-      trim: true,
-    },
-
-    qr: {
-      type: String, // Optional QR code URL or base64
-    },
-
-    game: {
-      type: Schema.Types.ObjectId,
-      ref: "Game",
-      required: [true, "Game ID is required."],
-    },
-
-    type: {
+    game: { type: Schema.Types.ObjectId, ref: "Game", required: true },
+    entryFee: { type: Number, default: 0 },
+    format: {
       type: String,
       enum: ["single_elimination", "double_elimination", "round_robin"],
-      required: [true, "Tournament type is required."],
+      required: true,
     },
+    teamBased: { type: Boolean, default: true },
+    minPlayers: { type: Number, required: true },
+    maxPlayers: { type: Number, required: true },
+  },
+  { _id: false }
+);
 
-    teamBased: {
-      type: Boolean,
-      default: true,
+const TournamentStaffSchema = new Schema(
+  {
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    role: {
+      type: String,
+      enum: ["owner", "organizer", "manager", "support"],
+      required: true,
     },
+  },
+  { _id: false }
+);
 
+const TournamentSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    description: { type: String },
+    bannerUrl: { type: String },
+    location: { type: String, required: true, trim: true },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
+    isPublic: { type: Boolean, default: true },
     status: {
       type: String,
       enum: ["upcoming", "ongoing", "completed"],
       default: "upcoming",
     },
-
-    startDate: {
-      type: Date,
-      required: [true, "Start date is required."],
+    games: {
+      type: [TournamentGameSchema],
+      validate: [(val) => val.length > 0, "At least one game is required"],
     },
-
-    endDate: {
-      type: Date,
-      required: [true, "End date is required."],
-    },
-
-    minPlayers: {
-      type: Number,
-      required: [true, "Minimum players per team is required."],
-      min: 1,
-    },
-
-    maxPlayers: {
-      type: Number,
-      required: [true, "Maximum players per team is required."],
-      min: 1,
-    },
-
-    location: {
-      type: String,
-      required: [true, "Location is required."],
-      trim: true,
-    },
-
-    isPublic: {
-      type: Boolean,
-      default: true,
-    },
-
-    description: {
-      type: String,
-    },
-
-    bannerUrl: {
-      type: String,
-    },
-
-    organizer: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: [true, "Organizer ID is required."],
-    },
-
-    admin: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: [true, "Admin ID is required."],
-    },
+    staff: [TournamentStaffSchema],
   },
   { timestamps: true }
 );

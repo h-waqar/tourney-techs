@@ -1,116 +1,75 @@
-// src/app/api/tournaments/[id]/route.js
+// src\app\api\tournaments\[id]\route.js
 
-import { connectDB } from "@/lib/mongoose";
 import { Tournament } from "@/models/Tournament";
-import { ApiResponse } from "@/utils/server/ApiResponse";
-import { ApiError } from "@/utils/server/ApiError";
+import { requireAuth } from "@/utils/server/auth";
+import { requireTournamentStaff } from "@/utils/server/tournamentPermissions";
 import { asyncHandler } from "@/utils/server/asyncHandler";
-import { requireAuth } from "@/middleware/auth";
-import { requireRole } from "@/middleware/roles";
-import { parseForm } from "@/utils/server/parseForm";
-import { uploadOnCloudinary } from "@/utils/server/cloudinary";
+import { ApiError } from "@/utils/server/ApiError";
 
-// Needed for formidable to parse form-data (with files)
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// GET /api/tournaments/[id]
+export const GET = asyncHandler(async (req, context) => {
+  const { id } = await context.params;
 
-// ✅ GET /api/tournaments/:id → View tournament by ID
-export const GET = asyncHandler(async (_, context) => {
-  await connectDB();
+  const tournament = await Tournament.findById(id)
+    .populate("games.game")
+    .populate("staff.user", "name email")
+    .lean();
 
-  const params = await Promise.resolve(context.params); // force async context
+  if (!tournament) throw new ApiError(404, "Tournament not found");
 
-  const { id } = params;
-  const tournament = await Tournament.findById(id);
-
-  if (!tournament) {
-    throw new ApiError(404, "Tournament not found.");
-  }
-
-  return Response.json(new ApiResponse(200, tournament, "Tournament fetched"));
+  return Response.json(tournament);
 });
 
-// ✅ PATCH /api/tournaments/:id → Update tournament (admin only)
+// PATCH /api/tournaments/[id]
 export const PATCH = asyncHandler(async (req, context) => {
-  await connectDB();
+  const authUser = await requireAuth(req);
+  const { id } = await context.params;
 
-  const authUser = await requireAuth();
-  await requireRole(authUser, "admin");
+  await requireTournamentStaff(id, authUser._id, ["owner", "organizer"]);
 
-  const { id } = context.params;
-  const { fields, files } = await parseForm(req);
-  const updates = {};
+  const data = await req.json();
 
-  // List of updatable fields
   const allowedFields = [
     "name",
-    "type",
-    "teamBased",
+    "description",
+    "bannerUrl",
+    "location",
     "startDate",
     "endDate",
-    "minPlayers",
-    "maxPlayers",
-    "location",
-    "description",
-    "status",
+    "games",
+    "isPublic",
   ];
 
+  const update = {};
   for (const key of allowedFields) {
-    if (fields[key]) {
-      updates[key] =
-        key === "teamBased" ? fields[key][0] === "true" : fields[key][0];
-    }
+    if (data[key] !== undefined) update[key] = data[key];
   }
 
-  // Handle file uploads (banner, QR)
-  const bannerPath = Array.isArray(files.bannerUrl)
-    ? files.bannerUrl[0]?.filepath
-    : files.bannerUrl?.filepath;
-
-  const qrPath = Array.isArray(files.qr)
-    ? files.qr[0]?.filepath
-    : files.qr?.filepath;
-
-  if (bannerPath) {
-    const bannerUpload = await uploadOnCloudinary(
-      bannerPath,
-      "tournaments/banners"
-    );
-    updates.bannerUrl = bannerUpload?.secure_url;
+  if (Object.keys(update).length === 0) {
+    throw new ApiError(400, "No valid fields provided for update");
   }
 
-  if (qrPath) {
-    const qrUpload = await uploadOnCloudinary(qrPath, "tournaments/qr");
-    updates.qr = qrUpload?.secure_url;
-  }
-
-  const tournament = await Tournament.findByIdAndUpdate(id, updates, {
-    new: true,
-  });
-
-  if (!tournament) throw new ApiError(404, "Tournament not found.");
-
-  return Response.json(
-    new ApiResponse(200, tournament, "Tournament updated successfully")
+  const tournament = await Tournament.findByIdAndUpdate(
+    id,
+    { $set: update },
+    { new: true }
   );
+
+  if (!tournament) throw new ApiError(404, "Tournament not found");
+
+  return Response.json({ message: "Tournament updated", tournament });
 });
 
-// ✅ DELETE /api/tournaments/:id → Delete tournament (admin only)
-export const DELETE = asyncHandler(async (_, context) => {
-  await connectDB();
+// DELETE /api/tournaments/[id]
+export const DELETE = asyncHandler(async (req, context) => {
+  const authUser = await requireAuth(req);
+  const { id } = await context.params;
 
-  const authUser = await requireAuth();
-  await requireRole(authUser, "admin");
+  await requireTournamentStaff(id, authUser._id, ["owner"]);
 
-  const { id } = context.params;
-  const deleted = await Tournament.findByIdAndDelete(id);
+  const tournament = await Tournament.findByIdAndDelete(id);
 
-  if (!deleted) throw new ApiError(404, "Tournament not found.");
+  if (!tournament) throw new ApiError(404, "Tournament not found");
 
-  return Response.json(
-    new ApiResponse(200, null, "Tournament deleted successfully")
-  );
+  return Response.json({ message: "Tournament deleted" });
 });
