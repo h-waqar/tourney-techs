@@ -5,7 +5,7 @@ import { useState } from "react";
 import DashboardNavbar from "@/components/ui/dashboard/DashboardNavbar";
 import DashboardSidebar from "@/components/ui/dashboard/DashboardSidebar";
 
-import { LayoutDashboard, Users, Settings, LogOut, BadgePlus } from "lucide-react";
+import { LayoutDashboard, Users, Settings, LogOut, BadgePlus, Gamepad2 } from "lucide-react";
 
 
 // Change this to adminNavItems if needed
@@ -13,6 +13,7 @@ const adminNavItems = [
   { href: "/admin", label: "Admin Dashboard", icon: LayoutDashboard },
   { href: "/dashboard", label: "Switch To User", icon: LayoutDashboard },
   { href: "/admin/users", label: "Manage Users", icon: Users },
+  { href: "/admin/add-games", label: "Add Game", icon: Gamepad2 },
   { href: "/admin/create-tournament", label: "Create Tournament", icon: BadgePlus },
   {
     label: "Settings",
