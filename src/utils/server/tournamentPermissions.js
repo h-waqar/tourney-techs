@@ -10,7 +10,7 @@ export async function requireTournamentStaff(
   userId,
   allowedRoles = []
 ) {
-  const tournament = await Tournament.findById(tournamentId).lean();
+  const tournament = await Tournament.findById(tournamentId);
   if (!tournament) throw new ApiError(404, "Tournament not found");
 
   const isStaff = tournament.staff.some(
@@ -19,8 +19,10 @@ export async function requireTournamentStaff(
       allowedRoles.includes(member.role)
   );
 
-  const user = await User.findById(userId).lean();
-  const isPlatformAdmin = user?.roles?.includes("admin");
+  const user = await User.findById(userId);
+  const isPlatformAdmin =
+    user?.role === "admin" ||
+    (Array.isArray(user?.roles) && user.roles.includes("admin"));
 
   if (!isStaff && !isPlatformAdmin) {
     throw new ApiError(403, "You are not authorized to access this tournament");
