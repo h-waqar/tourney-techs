@@ -1,15 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "@/utils/axios";
 
 import TournamentCard from "@/components/ui/tournaments/TournamentCard";
-
-import { tournaments } from "@/constants/tournament-listing-page/tournamentData";
-
 import TournamentFilters from "@/components/ui/tournaments/TournamentFilters";
 
-
 export default function TournamentListing() {
+  const [tournaments, setTournaments] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -22,10 +20,23 @@ export default function TournamentListing() {
 
   const itemsPerPage = 6;
 
+  useEffect(() => {
+    const fetchTournaments = async () => {
+      try {
+        const res = await api.get("/api/tournaments");
+        setTournaments(res.data.data || []);
+      } catch (err) {
+        console.error("Failed to fetch tournaments:", err);
+      }
+    };
+
+    fetchTournaments();
+  }, []);
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
-    setCurrentPage(1); // reset to first page
+    setCurrentPage(1);
   };
 
   const sortedTournaments = [...tournaments].sort((a, b) => {
@@ -34,14 +45,21 @@ export default function TournamentListing() {
   });
 
   const filteredTournaments = sortedTournaments.filter((t) => {
-    const matchesSearch = t.title.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch =
+      t.name?.toLowerCase().includes(search.toLowerCase()) ?? false;
+
     const matchesStatus = filters.status ? t.status === filters.status : true;
+
     const matchesLocation = filters.location
       ? t.location === filters.location
       : true;
-    const matchesType = filters.type ? t.type === filters.type : true;
+
+    const matchesType = filters.type
+      ? t.type === filters.type // ✅ Make sure your tournament objects include `type`
+      : true;
+
     const matchesGame = filters.game
-      ? t.games.some((g) => g.name === filters.game)
+      ? t.games?.some((g) => g?.name === filters.game) // ✅ Check by direct name field
       : true;
 
     return (
@@ -61,73 +79,69 @@ export default function TournamentListing() {
   );
 
   return (
+    <div className="max-w-7xl mx-auto">
+      <h1
+        className="text-4xl font-extrabold text-center mb-6"
+        style={{ color: "var(--accent-color)" }}
+      >
+        🎮 Explore Tournaments
+      </h1>
 
-  
-    <>
-      <div className="max-w-7xl mx-auto">
-        <h1
-          className="text-4xl font-extrabold text-center mb-6"
-          style={{ color: "var(--accent-color)" }}
-        >
-          🎮 Explore Tournaments
-        </h1>
+      {/* Filters + Search */}
+      <TournamentFilters
+        filters={filters}
+        onChange={handleFilterChange}
+        search={search}
+        onSearchChange={setSearch}
+        tournamentData={tournaments}
+      />
 
-        {/* Filters + Search */}
-        <TournamentFilters
-          filters={filters}
-          onChange={handleFilterChange}
-          search={search}
-          onSearchChange={setSearch}
-          tournamentData={tournaments}
-        />
-
-        {/* Tournament Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {paginatedTournaments.map((tournament) => (
-            <TournamentCard
-              key={tournament.id}
-              {...tournament}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-            />
-          ))}
-        </div>
-
-        {/* Pagination */}
-        <div className="flex justify-center items-center gap-4 mt-12">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            className="px-4 py-2 rounded bg-gray-800 text-white hover:bg-gray-700 disabled:opacity-50"
-          >
-            Previous
-          </button>
-
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentPage(index + 1)}
-              className={`px-4 py-2 rounded font-semibold ${
-                currentPage === index + 1
-                  ? "bg-yellow-500 text-black"
-                  : "bg-gray-800 text-white hover:bg-gray-700"
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
-
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            className="px-4 py-2 rounded bg-gray-800 text-white hover:bg-gray-700 disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
+      {/* Tournament Cards */}
+      <div className="grid grid-cols-1 gap-4">
+        {paginatedTournaments.map((tournament) => (
+          <TournamentCard
+            key={tournament._id}
+            {...tournament}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
+        ))}
       </div>
-    </>
+
+      {/* Pagination */}
+      <div className="flex justify-center items-center gap-4 mt-12">
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          className="px-4 py-2 rounded bg-gray-800 text-white hover:bg-gray-700 disabled:opacity-50"
+        >
+          Previous
+        </button>
+
+        {Array.from({ length: totalPages }, (_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentPage(index + 1)}
+            className={`px-4 py-2 rounded font-semibold ${
+              currentPage === index + 1
+                ? "bg-yellow-500 text-black"
+                : "bg-gray-800 text-white hover:bg-gray-700"
+            }`}
+          >
+            {index + 1}
+          </button>
+        ))}
+
+        <button
+          disabled={currentPage === totalPages}
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          className="px-4 py-2 rounded bg-gray-800 text-white hover:bg-gray-700 disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+    </div>
   );
 }

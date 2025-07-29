@@ -47,7 +47,7 @@ export const PATCH = asyncHandler(async (req, context) => {
   return Response.json({ success: true, updatedGame: game });
 });
 
-// DELETE /api/tournaments/:id/games/:gid → Remove game from tournament
+// DELETE /api/tournaments/:id/games/:gid → Remov egame from tournament
 export const DELETE = asyncHandler(async (req, context) => {
   const user = await requireAuth(req);
   const params = await context.params;

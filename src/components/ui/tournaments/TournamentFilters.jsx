@@ -7,13 +7,11 @@ export default function TournamentFilters({
 }) {
   const uniqueLocations = [...new Set(tournamentData.map((t) => t.location))].sort();
 
-  const uniqueGames = [
-    ...new Set(
-      tournamentData.flatMap((t) =>
-        Array.isArray(t.games) ? t.games.map((g) => g.name) : []
-      )
-    ),
-  ].sort();
+ 
+  // Derive type from `teamBased`
+  const uniqueTypes = [...new Set(
+    tournamentData.map((t) => (t.teamBased ? "team" : "single"))
+  )];
 
   const selectClass =
     "p-2 rounded border border-[var(--border-color)] bg-[var(--card-background)] text-[var(--foreground)]";
@@ -24,12 +22,12 @@ export default function TournamentFilters({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-10">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
       {/* Search bar */}
       <input
         type="text"
         placeholder="Search by tournament name..."
-        className="p-2 rounded border border-[var(--border-color)] bg-[var(--card-background)] text-[var(--foreground)]"
+        className={selectClass}
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
       />
@@ -62,7 +60,7 @@ export default function TournamentFilters({
         ))}
       </select>
 
-      {/* Type filter */}
+      {/* Type filter (derived from teamBased) */}
       <select
         name="type"
         value={filters.type}
@@ -70,21 +68,9 @@ export default function TournamentFilters({
         className={selectClass}
       >
         <option value="" style={optionStyle}>All Types</option>
-        <option value="single" style={optionStyle}>Single</option>
-        <option value="team" style={optionStyle}>Team</option>
-      </select>
-
-      {/* Game filter */}
-      <select
-        name="game"
-        value={filters.game}
-        onChange={onChange}
-        className={selectClass}
-      >
-        <option value="" style={optionStyle}>All Games</option>
-        {uniqueGames.map((game) => (
-          <option key={game} value={game} style={optionStyle}>
-            {game}
+        {uniqueTypes.map((type) => (
+          <option key={type} value={type} style={optionStyle}>
+            {type === "team" ? "Team Based" : "Solo"}
           </option>
         ))}
       </select>

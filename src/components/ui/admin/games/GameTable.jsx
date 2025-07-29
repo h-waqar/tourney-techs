@@ -1,5 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
+import { Trash2, Pencil } from "lucide-react";
+
 import Image from "next/image";
 export default function GamesTable({ games, onEdit, onDelete }) {
   const [search, setSearch] = useState("");
@@ -67,13 +69,13 @@ export default function GamesTable({ games, onEdit, onDelete }) {
                       onClick={() => onEdit(game)}
                       className="text-[color:var(--accent-color)] underline"
                     >
-                      Edit
+                      <Pencil size={16} />
                     </button>
                     <button
                       onClick={() => onDelete(game._id)}
                       className="text-red-500 underline"
                     >
-                      Delete
+                     <Trash2 size={16} />
                     </button>
                   </td>
                 </tr>
