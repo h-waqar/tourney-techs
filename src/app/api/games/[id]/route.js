@@ -5,42 +5,60 @@ import { asyncHandler } from "@/utils/server/asyncHandler";
 import { ApiResponse } from "@/utils/server/ApiResponse";
 import { ApiError } from "@/utils/server/ApiError";
 import { requireAdmin } from "@/utils/server/roleGuards";
+import { uploadOnCloudinary } from "@/utils/server/cloudinary";
+import { parseForm } from "@/utils/server/parseForm"; // ✅ Use shared util
 
-// GET /api/games/:id
-export const GET = asyncHandler(async (_req, context) => {
-  const params = await context.params;
+export const config = {
+  api: { bodyParser: false },
+};
 
-  const { id } = params;
-
-  const game = await Game.findById(id).lean();
-
-  if (!game) throw new ApiError(404, "Game not found");
-
-  return Response.json(new ApiResponse(200, game, "Game fetched"));
-});
-
-// PUT /api/games/:id
-export const PUT = asyncHandler(async (req, context) => {
+export const PATCH = asyncHandler(async (req, context) => {
   await requireAdmin();
 
-  const updates = await req.json();
-
   const params = await context.params;
-
   const { id } = params;
+  const game = await Game.findById(id);
+  if (!game) throw new ApiError(404, "Game not found");
 
-  const updatedGame = await Game.findByIdAndUpdate(id, updates, {
-    new: true,
-    runValidators: true,
-  }).lean();
+  const { fields, files } = await parseForm(req);
 
-  if (!updatedGame) throw new ApiError(404, "Game not found");
+  const allowedFields = [
+    "name",
+    "genre",
+    "platform",
+    "description",
+    "rulesUrl",
+  ];
+  for (const key of allowedFields) {
+    if (fields[key]) game[key] = fields[key].toString();
+  }
+
+  // Handle icon update
+  const iconPath = Array.isArray(files.icon)
+    ? files.icon[0]?.filepath
+    : files.icon?.filepath;
+
+  if (iconPath) {
+    const iconUpload = await uploadOnCloudinary(iconPath, "games/icons");
+    game.icon = iconUpload.secure_url;
+  }
+
+  // Handle cover update
+  const coverPath = Array.isArray(files.coverImage)
+    ? files.coverImage[0]?.filepath
+    : files.coverImage?.filepath;
+
+  if (coverPath) {
+    const coverUpload = await uploadOnCloudinary(coverPath, "games/covers");
+    game.coverImage = coverUpload.secure_url;
+  }
+
+  await game.save();
 
   return Response.json(
-    new ApiResponse(200, updatedGame, "Game updated successfully")
+    new ApiResponse(200, game.toObject(), "Game updated successfully")
   );
 });
-
 // DELETE /api/games/:id
 export const DELETE = asyncHandler(async (_req, context) => {
   await requireAdmin();

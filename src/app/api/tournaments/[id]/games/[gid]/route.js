@@ -1,3 +1,5 @@
+// src\app\api\tournaments\[id]\games\[gid]\route.js
+
 import { Tournament } from "@/models/Tournament";
 import { requireAuth } from "@/utils/server/auth";
 import { requireTournamentStaff } from "@/utils/server/tournamentPermissions";
