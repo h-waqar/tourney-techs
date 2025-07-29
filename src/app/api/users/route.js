@@ -2,8 +2,8 @@ import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
 import { ApiResponse } from "@/utils/server/ApiResponse";
 import { asyncHandler } from "@/utils/server/asyncHandler";
-import { requireAuth } from "@/middleware/auth";
-import { requireRole } from "@/middleware/roles";
+import { requireAuth } from "@/utils/server/auth";
+import { requireRole } from "@/utils/server/auth";
 
 export const GET = asyncHandler(async () => {
   await connectDB();
