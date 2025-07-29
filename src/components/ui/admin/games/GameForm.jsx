@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState } from "react";
 
 export default function GameForm({ onSubmit, initialData = {}, onClose }) {
@@ -7,14 +8,13 @@ export default function GameForm({ onSubmit, initialData = {}, onClose }) {
     platform: "",
     description: "",
     rulesUrl: "",
-    icon: "",
-    coverImage: "",
   });
 
-  const [icon, setIcon] = useState(null);
-  const [coverImage, setCoverImage] = useState(null);
+  const [iconFile, setIconFile] = useState(null);
+  const [coverFile, setCoverFile] = useState(null);
+  const [iconPreview, setIconPreview] = useState("");
+  const [coverPreview, setCoverPreview] = useState("");
 
-  // 🔁 Update form data when initialData changes
   useEffect(() => {
     setFormData({
       name: initialData?.name || "",
@@ -22,42 +22,50 @@ export default function GameForm({ onSubmit, initialData = {}, onClose }) {
       platform: initialData?.platform || "",
       description: initialData?.description || "",
       rulesUrl: initialData?.rulesUrl || "",
-      icon: initialData?.icon || "",
-      coverImage: initialData?.coverImage || "",
     });
-    setIcon(null);
-    setCoverImage(null);
-  }, [initialData]);
 
+    setIconFile(null);
+    setCoverFile(null);
+    setIconPreview(initialData?.icon || "");
+    setCoverPreview(initialData?.coverImage || "");
+  }, [initialData]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "icon") {
-      setIcon(files[0]);
-    } else if (name === "coverImage") {
-      setCoverImage(files[0]);
+
+    if (name === "icon" && files?.[0]) {
+      const file = files[0];
+      setIconFile(file);
+      setIconPreview(URL.createObjectURL(file));
+    } else if (name === "coverImage" && files?.[0]) {
+      const file = files[0];
+      setCoverFile(file);
+      setCoverPreview(URL.createObjectURL(file));
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  const data = new FormData();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  Object.entries(formData).forEach(([key, value]) => {
-    data.append(key, value);
-  });
+    const data = new FormData();
+    data.append("name", formData.name);
+    data.append("genre", formData.genre);
+    data.append("platform", formData.platform);
+    data.append("description", formData.description);
+    data.append("rulesUrl", formData.rulesUrl || "");
 
-  if (icon) data.append("icon", icon);
-  if (coverImage) data.append("coverImage", coverImage);
+    if (iconFile) data.append("icon", iconFile);
+    if (coverFile) data.append("coverImage", coverFile);
 
-  await onSubmit(data); // 🛠️ Fix: await the result
-  if (onClose) onClose();
-};
+    for (let [key, val] of data.entries()) {
+      console.log(`${key}:`, val);
+    }
+
+    await onSubmit(data);
+    if (onClose) onClose();
+  };
 
   return (
     <form
@@ -98,8 +106,6 @@ export default function GameForm({ onSubmit, initialData = {}, onClose }) {
           placeholder="Rules URL"
           className="p-2 rounded border border-[var(--border-color)] bg-[var(--card-background)] text-[var(--foreground)]"
         />
-     
-     
       </div>
 
       <textarea
@@ -123,17 +129,10 @@ export default function GameForm({ onSubmit, initialData = {}, onClose }) {
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
             <p className="text-sm text-gray-500">Click or drag file to upload logo</p>
-            {icon && (
+            {iconPreview && (
               <img
-                src={URL.createObjectURL(icon)}
-                alt="Preview"
-                className="mt-2 max-h-24 mx-auto rounded object-contain"
-              />
-            )}
-            {!icon && formData.icon && (
-              <img
-                src={formData.icon}
-                alt="Current Icon"
+                src={iconPreview}
+                alt="Icon Preview"
                 className="mt-2 max-h-24 mx-auto rounded object-contain"
               />
             )}
@@ -152,17 +151,10 @@ export default function GameForm({ onSubmit, initialData = {}, onClose }) {
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
             <p className="text-sm text-gray-500">Click or drag file to upload banner</p>
-            {coverImage && (
+            {coverPreview && (
               <img
-                src={URL.createObjectURL(coverImage)}
-                alt="Preview"
-                className="mt-2 max-h-32 w-full object-cover rounded"
-              />
-            )}
-            {!coverImage && formData.coverImage && (
-              <img
-                src={formData.coverImage}
-                alt="Current Cover"
+                src={coverPreview}
+                alt="Cover Preview"
                 className="mt-2 max-h-32 w-full object-cover rounded"
               />
             )}

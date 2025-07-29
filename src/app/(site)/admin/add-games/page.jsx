@@ -25,23 +25,26 @@ export default function GamesPage() {
     fetchGames();
   }, []);
 
-  const handleAddOrUpdate = async (data) => {
+const handleAddOrUpdate = async (data) => {
   try {
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    let res;
     if (editGame) {
-      const res = await api.put(`/api/games/${editGame._id}`, data);
-      if (res.status === 200) {
-        toast.success("Game updated successfully");
-        await fetchGames();        // ✅ WAIT for data to refresh
-        setShowForm(false);
-        setEditGame(null);
-      }
+      res = await api.patch(`/api/games/${editGame._id}`, data, config);
     } else {
-      const res = await api.post("/api/games", data);
-      if (res.status === 201) {
-        toast.success("Game added successfully");
-        await fetchGames();        // ✅ WAIT here too
-        setShowForm(false);
-      }
+      res = await api.post("/api/games", data, config);
+    }
+
+    if (res.status === 201 || res.status === 200) {
+      toast.success("Game saved successfully");
+      await fetchGames();
+      setShowForm(false);
+      setEditGame(null);
     }
   } catch (err) {
     console.error("Game save failed", err);
