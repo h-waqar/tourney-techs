@@ -3,8 +3,8 @@ import { User } from "@/models/User";
 import { ApiResponse } from "@/utils/server/ApiResponse";
 import { ApiError } from "@/utils/server/ApiError";
 import { asyncHandler } from "@/utils/server/asyncHandler";
-import { requireAuth } from "@/middleware/auth";
-import { requireRole } from "@/middleware/roles";
+import { requireAuth } from "@/utils/server/auth";
+import { requireRole } from "@/utils/server/auth";
 
 export const GET = asyncHandler(async (_, { params }) => {
   await connectDB();

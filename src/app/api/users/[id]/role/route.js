@@ -5,8 +5,9 @@ import { User } from "@/models/User";
 import { asyncHandler } from "@/utils/server/asyncHandler";
 import { ApiError } from "@/utils/server/ApiError";
 import { ApiResponse } from "@/utils/server/ApiResponse";
-import { requireAuth } from "@/middleware/auth";
-import { requireRole } from "@/middleware/roles";
+import { requireAuth } from "@/utils/server/auth";
+import { requireRole } from "@/utils/server/auth";
+
 
 export const PATCH = asyncHandler(async (req, { params }) => {
   await connectDB();

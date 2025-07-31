@@ -1,6 +1,6 @@
 import { Tournament } from "@/models/Tournament";
 import { requireAuth } from "@/utils/server/auth";
-import { requireTournamentStaff } from "@/utils/server/tournamentPermissions";
+// import { requireTournamentStaff } from "@/utils/server/tournamentPermissions";
 import { ApiError } from "@/utils/server/ApiError";
 import { asyncHandler } from "@/utils/server/asyncHandler";
 import { User } from "@/models/User";
