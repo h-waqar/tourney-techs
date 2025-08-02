@@ -26,9 +26,9 @@ export default function TournamentsPage() {
   }, []);
 
   const handleDelete = async (id) => {
-    toast.success("Tournament Deleted Successfully")
     try {
       await api.delete(`/api/tournaments/${id}`);
+      toast.success("Tournament Deleted Successfully");
       fetchTournaments();
     } catch (err) {
       console.error("Delete failed", err);

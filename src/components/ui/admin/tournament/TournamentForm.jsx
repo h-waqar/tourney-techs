@@ -22,7 +22,6 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
   const [gamesList, setGamesList] = useState([]);
   const [gameFields, setGameFields] = useState([]);
 
-  // Load initial data
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -34,14 +33,24 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
         status: initialData.status || "upcoming",
         bannerUrl: initialData.bannerUrl || "",
       });
-      setGameFields(initialData.games || []);
+      setGameFields(
+        (initialData.games || []).map((g) => ({
+          gameConfigId: g._id || "",
+          game: typeof g.game === "object" ? g.game._id : g.game,
+          entryFee: g.entryFee,
+          format: g.format || "single_elimination",
+          teamBased: g.teamBased || false,
+          minPlayers: g.minPlayers,
+          maxPlayers: g.maxPlayers,
+        }))
+      );
+
       if (initialData.bannerUrl) {
         setPreviewUrl(initialData.bannerUrl);
       }
     }
   }, [initialData]);
 
-  // Load all games
   useEffect(() => {
     const fetchGames = async () => {
       try {
@@ -94,85 +103,136 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
     setGameFields(updated);
   };
 
-  const handleRemoveGameField = (index) => {
+  const handleRemoveGameField = async (index) => {
+    const field = gameFields[index];
+    if (field.gameConfigId && initialData?._id) {
+      try {
+        await api.delete(
+          `/api/tournaments/${initialData._id}/games/${field.gameConfigId}`
+        );
+        toast.success("Game deleted!");
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to delete game.");
+        return;
+      }
+    }
     setGameFields((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-
-  try {
-    let bannerUrl = formData.bannerUrl;
-
-    // 1. Upload image if it's a new file
-    if (image && initialData?._id) {
-      const imageForm = new FormData();
-      imageForm.append("banner", image);
-
-      const uploadRes = await api.post(
-        `/api/tournaments/${initialData._id}/upload-banner`,
-        imageForm,
-        { headers: { "Content-Type": "multipart/form-data" } }
+  const updateTournamentGame = async (gameConfigId, updatedGame) => {
+    try {
+      await api.patch(
+        `/api/tournaments/${initialData._id}/games/${gameConfigId}`,
+        updatedGame
       );
-
-      bannerUrl = uploadRes.data.bannerUrl;
+      toast.success("Game updated!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update game.");
     }
+  };
 
-    // 2. Prepare JSON payload for PATCH
-    const validGames = gameFields
-      .filter(
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      let bannerUrl = formData.bannerUrl;
+
+      if (image && initialData?._id) {
+        const imageForm = new FormData();
+        imageForm.append("banner", image);
+        const uploadRes = await api.post(
+          `/api/tournaments/${initialData._id}/upload-banner`,
+          imageForm,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+        bannerUrl = uploadRes.data.bannerUrl;
+      }
+
+      const validGames = gameFields.filter(
         (g) =>
           g.game &&
           !isNaN(g.entryFee) &&
           !isNaN(g.minPlayers) &&
           !isNaN(g.maxPlayers)
-      )
-      .map((g) => ({
-        game: g.game,
-        entryFee: Number(g.entryFee),
-        format: g.format || "single_elimination",
-        teamBased: Boolean(g.teamBased),
-        minPlayers: Number(g.minPlayers),
-        maxPlayers: Number(g.maxPlayers),
-      }));
+      );
 
-    const jsonPayload = {
-      ...formData,
-      bannerUrl,
-      games: validGames,
-      isPublic: true,
-    };
+      const jsonPayload = {
+        ...formData,
+        bannerUrl,
+        isPublic: true,
+      };
 
-    if (initialData?._id) {
-      // Update tournament
-      await api.patch(`/api/tournaments/${initialData._id}`, jsonPayload);
-      toast.success("✅ Tournament updated!");
-    } else {
-      // Create tournament (old logic stays same)
-      const createForm = new FormData();
-      Object.entries(jsonPayload).forEach(([key, value]) => {
-        createForm.append(key, key === "games" ? JSON.stringify(value) : value);
-      });
-      if (image) {
-        createForm.append("banner", image);
+      if (initialData?._id) {
+        // 🔁 Update Tournament
+        await api.patch(`/api/tournaments/${initialData._id}`, jsonPayload);
+
+        // 🎯 Update or Add Games
+        for (const g of validGames) {
+          const gameData = {
+            game: g.game,
+            entryFee: Number(g.entryFee),
+            format: g.format || "single_elimination",
+            teamBased: Boolean(g.teamBased),
+            minPlayers: Number(g.minPlayers),
+            maxPlayers: Number(g.maxPlayers),
+          };
+
+          if (g.gameConfigId) {
+            // ✅ Update existing game
+            await api.patch(
+              `/api/tournaments/${initialData._id}/games/${g.gameConfigId}`,
+              gameData,
+              { headers: { "Content-Type": "application/json" } }
+            );
+          } else {
+            // ➕ Add new game
+            await api.post(
+              `/api/tournaments/${initialData._id}/games`,
+              gameData,
+              { headers: { "Content-Type": "application/json" } }
+            );
+          }
+        }
+
+        toast.success("Tournament updated!");
+      } else {
+        // Create New Tournament
+        const createForm = new FormData();
+        Object.entries({
+          ...jsonPayload,
+          games: validGames,
+        }).forEach(([key, value]) => {
+          createForm.append(
+            key,
+            key === "games" ? JSON.stringify(value) : value
+          );
+        });
+
+        if (image) {
+          createForm.append("banner", image);
+        }
+
+        await api.post("/api/tournaments", createForm, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        toast.success("Tournament created!");
       }
-      await api.post("/api/tournaments", createForm, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      toast.success("✅ Tournament created!");
+
+      onSuccess?.();
+      onClose?.();
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err?.response?.data?.message || "Failed to save tournament."
+      );
+    } finally {
+      setLoading(false);
     }
-
-    onSuccess?.();
-    onClose?.();
-  } catch (err) {
-    console.error(err);
-    toast.error(err?.response?.data?.message || "❌ Failed to save tournament.");
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
     <div className="p-6 bg-[var(--card)] text-white rounded-xl max-w-3xl mx-auto shadow-lg">
@@ -181,7 +241,6 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Fields */}
         <input
           type="text"
           name="name"
@@ -241,7 +300,6 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
           <option value="completed">Completed</option>
         </select>
 
-        {/* Image Upload */}
         <label className="block text-sm font-semibold text-white">
           Tournament Banner
         </label>
@@ -270,7 +328,7 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
           />
         )}
 
-        {/* Game Fields */}
+        {/* add games */}
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Game Fields</h3>
@@ -303,9 +361,15 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
                 }
                 className="w-full mt-5 p-2 rounded  bg-[var(--background)] text-white focus:outline-none"
               >
-                <option className="bg-[var(--background)]" value="">Select Game</option>
+                <option className="bg-[var(--background)]" value="">
+                  Select Game
+                </option>
                 {gamesList.map((game) => (
-                  <option className="bg-[var(--background)]" key={game._id} value={game._id}>
+                  <option
+                    className="bg-[var(--background)]"
+                    key={game._id}
+                    value={game._id}
+                  >
                     {game.name}
                   </option>
                 ))}
@@ -360,6 +424,25 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
                   className="w-full p-2 rounded  bg-[var(--background)] text-white focus:outline-none"
                 />
               </div>
+
+              {field.gameConfigId && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateTournamentGame(field.gameConfigId, {
+                      game: field.game,
+                      entryFee: field.entryFee,
+                      format: field.format,
+                      teamBased: field.teamBased,
+                      minPlayers: field.minPlayers,
+                      maxPlayers: field.maxPlayers,
+                    })
+                  }
+                  className="bg-[var(--accent-color)] px-3 py-1 mt-2 rounded text-black text-sm"
+                >
+                  Update Game
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -372,8 +455,8 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
           {loading
             ? "Saving..."
             : initialData
-            ? "Update Tournament"
-            : "Create Tournament"}
+              ? "Update Tournament"
+              : "Create Tournament"}
         </button>
       </form>
     </div>

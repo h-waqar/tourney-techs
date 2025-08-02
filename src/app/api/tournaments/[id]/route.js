@@ -8,6 +8,8 @@ import { parseForm } from "@/utils/server/parseForm";
 import { uploadOnCloudinary } from "@/utils/server/cloudinary";
 import { Tournament } from "@/models/Tournament";
 
+import { requireAuth } from "@/utils/server/auth";
+
 export const config = {
   api: { bodyParser: false },
 };
