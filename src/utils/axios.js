@@ -78,8 +78,12 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        console.error("❌ Token refresh failed. Logging out...");
-        // Optional: logout logic here
+        console.error("Token refresh failed. Logging out...");
+
+        // ✅ Clear token and redirect to login
+        localStorage.removeItem("accessToken");
+        window.location.href = "/auth/login";
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
