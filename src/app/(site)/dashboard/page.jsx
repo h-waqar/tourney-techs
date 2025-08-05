@@ -40,7 +40,7 @@ export default function TournamentListing() {
   };
 
   const sortedTournaments = [...tournaments].sort((a, b) => {
-    const order = { upcoming: 0, ongoing: 1, complete: 2 };
+    const order = { upcoming: 0, ongoing: 1, completed: 2 };
     return order[a.status] - order[b.status];
   });
 

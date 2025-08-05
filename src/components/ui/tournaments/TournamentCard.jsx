@@ -77,7 +77,7 @@ export default function TournamentCard({
                 color: "var(--background)",
               }}
             >
-              {games?.[0]?.entryFee ? `Rs ${games[0].entryFee}` : "Free"}
+              {games?.[0]?.entryFee ? `Price: ${games[0].entryFee}` : "Free"}
             </span>
           </div>
         </div>

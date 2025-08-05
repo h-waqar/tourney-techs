@@ -42,7 +42,7 @@ export default function TournamentFilters({
         <option value="" style={optionStyle}>All Status</option>
         <option value="upcoming" style={optionStyle}>Upcoming</option>
         <option value="ongoing" style={optionStyle}>Ongoing</option>
-        <option value="complete" style={optionStyle}>Complete</option>
+        <option value="completed" style={optionStyle}>Completed</option>
       </select>
 
       {/* Location filter */}
