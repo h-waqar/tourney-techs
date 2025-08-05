@@ -2,16 +2,33 @@ import Link from "next/link";
 import { X } from "lucide-react";
 import Image from "next/image";
 
+import api from "@/utils/axios";
+import { toast } from "react-hot-toast";
+
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+
+import { useRouter } from "next/navigation"; // ✅ add this
 
 const logo = "/img/logo.jpg";
 
 export default function DashboardSidebar({ isOpen, onClose, navItems }) {
   const [openMenu, setOpenMenu] = useState(null);
+  const router = useRouter(); // ✅ add this
 
   const toggleSubmenu = (label) => {
     setOpenMenu(openMenu === label ? null : label);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/api/logout"); // or use your `api.post("/logout")`
+      toast.success("Logged out successfully");
+      router.push("/auth/login"); // Redirect to login page
+    } catch (error) {
+      toast.error("Logout failed");
+      console.error("Logout error:", error);
+    }
   };
 
   return (
@@ -89,6 +106,14 @@ export default function DashboardSidebar({ isOpen, onClose, navItems }) {
                       </ul>
                     )}
                   </>
+                ) : item.label === "Logout" ? (
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-2 py-2 w-full text-left hover:bg-[var(--card-hover)] rounded"
+                  >
+                    <item.icon size={18} />
+                    {item.label}
+                  </button>
                 ) : (
                   <Link
                     href={item.href}

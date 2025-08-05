@@ -22,6 +22,47 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
   const [gamesList, setGamesList] = useState([]);
   const [gameFields, setGameFields] = useState([]);
 
+  // staff
+  const [usersList, setUsersList] = useState([]);
+  const [staffList, setStaffList] = useState([{ userId: "", role: "" }]);
+
+  // Load users
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await api.get("/api/users");
+        setUsersList(res.data.data || []);
+      } catch (err) {
+        console.error("Failed to load users", err);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    if (Array.isArray(initialData?.staff) && usersList.length) {
+      const mappedStaff = initialData.staff.map((member) => {
+        const user = member.userId || member.user || {}; // ✅ support both keys
+
+        return {
+          userId:
+            typeof user === "object" ? user._id?.toString() : user?.toString(),
+          role: member.role || "",
+        };
+      });
+
+      setStaffList(mappedStaff);
+    }
+  }, [initialData, usersList]);
+
+  useEffect(() => {
+    if (initialData?.staff) {
+      console.log("Initial Staff:", initialData.staff);
+      console.log("Users List:", usersList);
+      console.log("Mapped Staff:", staffList);
+    }
+  }, [initialData, usersList, staffList]);
+
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -120,6 +161,21 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
     setGameFields((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // staff
+  const handleAddStaff = () => {
+    setStaffList((prev) => [...prev, { userId: "", role: "" }]);
+  };
+
+  const handleStaffChange = (index, name, value) => {
+    const updated = [...staffList];
+    updated[index][name] = value;
+    setStaffList(updated);
+  };
+
+  const handleRemoveStaff = (index) => {
+    setStaffList((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const updateTournamentGame = async (gameConfigId, updatedGame) => {
     try {
       await api.patch(
@@ -197,10 +253,69 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
           }
         }
 
+        // staff
+        // First, build easier lookups
+        const initialStaff = (initialData.staff || []).map((s) => ({
+          userId: (s.userId?._id || s.user?._id || s.userId || "").toString(),
+          role: s.role,
+        }));
+        const currentStaff = staffList.filter((s) => s.userId && s.role);
+
+        // Step 1: Add or update all current staff
+        for (const newStaff of currentStaff) {
+          const existing = initialStaff.find(
+            (s) => s.userId === newStaff.userId
+          );
+          if (!existing) {
+            // New staff — Add
+            await api.post(`/api/tournaments/${initialData._id}/staff`, {
+              userId: newStaff.userId,
+              role: newStaff.role,
+            });
+          } else if (existing.role !== newStaff.role) {
+            // Existing staff with role change — Update
+            await api.patch(`/api/tournaments/${initialData._id}/staff`, {
+              userId: newStaff.userId,
+              role: newStaff.role,
+            });
+          }
+        }
+
+        // Step 2: Now safely remove staff that are no longer present
+        for (const oldStaff of initialStaff) {
+          const stillExists = currentStaff.some(
+            (s) => s.userId === oldStaff.userId
+          );
+          if (!stillExists) {
+            try {
+              await api.delete(
+                `/api/tournaments/${initialData._id}/staff?userId=${oldStaff.userId}`
+              );
+            } catch (err) {
+              console.error("Failed to remove staff:", err);
+              toast.error(
+                err.response?.data?.message || "Failed to remove staff"
+              );
+            }
+          }
+        }
+
         toast.success("Tournament updated!");
       } else {
-        // Create New Tournament
+        // staff
         const createForm = new FormData();
+        const organizers = staffList
+          .filter((s) => s.userId && s.role === "organizer")
+          .map((s) => s.userId);
+
+        const managers = staffList
+          .filter((s) => s.userId && s.role === "manager")
+          .map((s) => s.userId);
+
+        const support = staffList
+          .filter((s) => s.userId && s.role === "support")
+          .map((s) => s.userId);
+
         Object.entries({
           ...jsonPayload,
           games: validGames,
@@ -210,6 +325,10 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
             key === "games" ? JSON.stringify(value) : value
           );
         });
+
+        createForm.append("organizers", JSON.stringify(organizers));
+        createForm.append("managers", JSON.stringify(managers));
+        createForm.append("support", JSON.stringify(support));
 
         if (image) {
           createForm.append("banner", image);
@@ -226,9 +345,7 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
       onClose?.();
     } catch (err) {
       console.error(err);
-      toast.error(
-        err?.response?.data?.message || "Failed to save tournament."
-      );
+      toast.error(err?.response?.data?.message || "Failed to save tournament.");
     } finally {
       setLoading(false);
     }
@@ -289,10 +406,27 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
           />
         </div>
 
-        <select
+        {/* <select
           name="status"
           value={formData.status}
           onChange={handleChange}
+          className=""
+        >
+          <option value="upcoming">Upcoming</option>
+          <option value="ongoing">Ongoing</option>
+          <option value="completed">Completed</option>
+        </select> */}
+
+        <label htmlFor="status" className="block text-sm font-medium">
+          Status
+        </label>
+        <select
+          id="status"
+          name="status"
+          value={formData.status}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, status: e.target.value }))
+          }
           className="w-full p-3 rounded bg-[var(--card-background)]"
         >
           <option value="upcoming">Upcoming</option>
@@ -443,6 +577,62 @@ export default function TournamentForm({ initialData, onClose, onSuccess }) {
                   Update Game
                 </button>
               )}
+            </div>
+          ))}
+        </div>
+
+        {/* add staff */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Assign Staff</h3>
+            <button
+              type="button"
+              onClick={handleAddStaff}
+              className="text-sm px-3 py-1 bg-blue-600 rounded hover:bg-blue-700"
+            >
+              Add Staff
+            </button>
+          </div>
+
+          {staffList.map((staff, index) => (
+            <div
+              key={index}
+              className="bg-[var(--card-background)] p-4 rounded-md space-y-3 relative"
+            >
+              <button
+                type="button"
+                onClick={() => handleRemoveStaff(index)}
+                className="absolute top-2 right-2 text-red-500 cursor-pointer"
+              >
+                <X size={24} />
+              </button>
+              <select
+                value={staff.userId}
+                onChange={(e) =>
+                  handleStaffChange(index, "userId", e.target.value)
+                }
+                className="w-full p-2 rounded bg-[var(--background)] text-white"
+              >
+                <option value="">Select User</option>
+                {usersList.map((user) => (
+                  <option key={user._id} value={user._id.toString()}>
+                    {user.username || user.email}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={staff.role}
+                onChange={(e) =>
+                  handleStaffChange(index, "role", e.target.value)
+                }
+                className="w-full p-2 rounded bg-[var(--background)] text-white"
+              >
+                <option value="">Select Role</option>
+                <option value="organizer">Organizer</option>
+                <option value="manager">Manager</option>
+                <option value="support">Support</option>
+              </select>
             </div>
           ))}
         </div>

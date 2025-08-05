@@ -29,6 +29,9 @@ export const POST = asyncHandler(async (req) => {
 
   const games = JSON.parse(fields.games || "[]");
 
+  const status = fields.status?.toString() || "upcoming";
+
+
   // Optional: JSON array of users to assign as organizers/managers/support
   const organizers = JSON.parse(fields.organizers || "[]");
   const managers = JSON.parse(fields.managers || "[]");
@@ -80,8 +83,10 @@ export const POST = asyncHandler(async (req) => {
     endDate,
     isPublic,
     games,
-    status: "upcoming",
+    // status: "upcoming",
+    status,
     staff,
+
   });
 
   return Response.json(

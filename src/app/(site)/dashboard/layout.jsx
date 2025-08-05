@@ -12,7 +12,7 @@ const userNavItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/profile", label: "Profile", icon: Users },
   { href: "/dashboard/matches-overview", label: "Matches", icon: Users },
-  { href: "/logout", label: "Logout", icon: LogOut },
+  { href: "/logOut", label: "Logout", icon: LogOut },
 ];
 
 export default function DashboardLayout({ children }) {
