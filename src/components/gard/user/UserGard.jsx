@@ -1,29 +1,32 @@
-"use client";
-
 import { useEffect, useState } from "react";
+import api from "@/utils/axios";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
-import api from "@/utils/axios";
+
 import { toast } from "react-hot-toast";
 
-export default function AdminGuard({ children }) {
+export default function UserGuard({ children }) {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const checkAdmin = async () => {
+    const checkUserLogin = async () => {
       try {
         const res = await api.get("/api/me");
-        const user = res.data?.data?.user;  // FIX here
+        const user = res?.data?.data?.user;
 
-        if (user?.role === "admin") {
+        if (user) {
           setAuthorized(true);
+          toast.success("Successfully logged in. Welcome back!");
         } else {
-          router.push("/unauthorized");
+            toast.error("You must be logged in to access this page.");
+               setTimeout(() => {
+            router.push("/auth/login");
+          }, 100);
         }
-      } catch (err) {
-          toast.error("Unable to verify your session. Please log in again.");
+      } catch (error) {
+        toast.error("Unable to verify your session. Please log in again.");
          setTimeout(() => {
             router.push("/auth/login");
           }, 100);
@@ -32,11 +35,11 @@ export default function AdminGuard({ children }) {
       }
     };
 
-    checkAdmin();
-  }, [router]);
+    checkUserLogin();
+  }, []);
 
-  if (loading) return <Loader/>
-  if (!authorized) return null; 
+  if (loading) return <Loader />;
+  if (!authorized) return null;
 
   return <>{children}</>;
 }
