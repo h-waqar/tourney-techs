@@ -18,7 +18,6 @@ export default function UserGuard({ children }) {
 
         if (user) {
           setAuthorized(true);
-          toast.success("Successfully logged in. Welcome back!");
         } else {
             toast.error("You must be logged in to access this page.");
                setTimeout(() => {
