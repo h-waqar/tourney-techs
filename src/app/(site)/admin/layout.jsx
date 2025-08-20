@@ -23,6 +23,7 @@ const adminNavItems = [
   { href: "/dashboard", label: "Switch To User", icon: LayoutDashboard },
   { href: "/admin/users", label: "Manage Users", icon: Users },
   { href: "/admin/add-games", label: "Add Game", icon: Gamepad2 },
+  { href: "/admin/registered-players", label: "Registered Players", icon: Users },
   {
     href: "/admin/create-tournament",
     label: "Create Tournament",

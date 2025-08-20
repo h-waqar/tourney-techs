@@ -1,6 +1,7 @@
 "use client";
 
 import TournamentGameList from "./TournamentGameList";
+import Link from "next/link";
 
 export default function TournamentCard({
   _id,
@@ -110,6 +111,7 @@ export default function TournamentCard({
         <TournamentGameList games={games || []} />
 
         {/* Button */}
+        <Link href={"/dashboard/tournament-registration"}>
         <button
           onClick={() => onSelect(_id)}
           className="w-full mt-3 py-2 rounded-lg font-semibold transition hover:scale-[1.01]"
@@ -120,8 +122,10 @@ export default function TournamentCard({
             color: isSelected ? "var(--foreground)" : "var(--background)",
           }}
         >
-          {isSelected ? "✔ Entered" : "Enter Tournament"}
+          Register Now
+          {/* {isSelected ? "✔ Entered" : "Enter Tournament"} */}
         </button>
+        </Link>
       </div>
     </div>
   );
