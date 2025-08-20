@@ -1,0 +1,64 @@
+tree -I ".git|.next|backup|node_modules" -L 4 > structure.txt
+
+
+
+.
+|-- LICENSE
+|-- README.md
+|-- components.json
+|-- eslint.config.mjs
+|-- jsconfig.json
+|-- next-env.d.ts
+|-- next.config.js
+|-- package-lock.json
+|-- package.json
+|-- postcss.config.mjs
+|-- public
+|   |-- globe.svg
+|   `-- vercel.svg
+|-- src
+|   |-- app
+|   |   |-- api
+|   |   |   |-- (auth)
+|   |   |   |-- games
+|   |   |   |-- healthcheck
+|   |   |   |-- qr
+|   |   |   |-- tournaments
+|   |   |   `-- users
+|   |   |-- favicon.ico
+|   |   |-- globals.css
+|   |   |-- layout.jsx
+|   |   `-- page.jsx
+|   |-- lib
+|   |   |-- mongoose.js
+|   |   `-- utils.js
+|   |-- models
+|   |   |-- BracketGroup.js
+|   |   |-- Club.js
+|   |   |-- ClubMember.js
+|   |   |-- Game.js
+|   |   |-- Match.js
+|   |   |-- Registration.js
+|   |   |-- Team.js
+|   |   |-- TeamJoinRequest.js
+|   |   |-- TeamMember.js
+|   |   |-- Tournament.js
+|   |   `-- User.js
+|   `-- utils
+|       |-- axios.js
+|       |-- client
+|       |-- mapMatches.js
+|       |-- server
+|       |   |-- ApiError.js
+|       |   |-- ApiResponse.js
+|       |   |-- asyncHandler.js
+|       |   |-- auth.js
+|       |   |-- cloudinary.js
+|       |   |-- parseForm.js
+|       |   |-- roleGuards.js
+|       |   |-- tokens.js
+|       |   `-- tournamentPermissions.js
+|       `-- shared
+`-- structure.txt
+
+16 directories, 41 files
