@@ -7,24 +7,42 @@ const MatchSchema = new Schema(
       ref: "Tournament",
       required: true,
     },
-    game: { type: Schema.Types.ObjectId, ref: "Game", required: true },
+    tournamentGame: {
+      type: Schema.Types.ObjectId,
+      ref: "TournamentGame",
+      required: true,
+    },
     matchNumber: { type: Number, required: true },
     bracketGroup: { type: Schema.Types.ObjectId, ref: "BracketGroup" },
     round: { type: Number, required: true },
     qr: { type: String },
-    teamA: { type: Schema.Types.ObjectId, ref: "Team", required: true },
-    teamB: { type: Schema.Types.ObjectId, ref: "Team", required: true },
+    teamA: { type: Schema.Types.ObjectId, ref: "Team" },
+    teamB: { type: Schema.Types.ObjectId, ref: "Team" },
     winner: { type: Schema.Types.ObjectId, ref: "Team" },
     loser: { type: Schema.Types.ObjectId, ref: "Team" },
-    score: { type: String },
+    score: {
+      teamA: { type: Number, default: 0 },
+      teamB: { type: Number, default: 0 },
+    },
+    bestOf: { type: Number, default: 1 }, // best-of-N series
     scheduledAt: { type: Date },
     completedAt: { type: Date },
     nextMatch: { type: Schema.Types.ObjectId, ref: "Match" },
     admin: { type: Schema.Types.ObjectId, ref: "User" },
+    events: [
+      {
+        type: { type: String, enum: ["score", "foul", "pause", "resume"] },
+        timestamp: { type: Date, default: Date.now },
+        data: Schema.Types.Mixed,
+      },
+    ],
   },
   { timestamps: true }
 );
 
-MatchSchema.index({ tournament: 1, game: 1, matchNumber: 1 }, { unique: true });
+MatchSchema.index(
+  { tournament: 1, tournamentGame: 1, matchNumber: 1 },
+  { unique: true }
+);
 
 export const Match = models.Match || model("Match", MatchSchema);

@@ -1,3 +1,5 @@
+// src\models\BracketGroup.js
+
 import { Schema, model, models } from "mongoose";
 
 const BracketGroupSchema = new Schema(

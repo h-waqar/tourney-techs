@@ -1,3 +1,5 @@
+// src\models\User.js
+
 import { Schema, model, models } from "mongoose";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";

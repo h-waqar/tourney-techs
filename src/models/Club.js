@@ -1,3 +1,5 @@
+// src\models\Club.js
+
 import { Schema, model, models } from "mongoose";
 
 const ClubSchema = new Schema(

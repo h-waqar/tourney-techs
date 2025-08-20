@@ -1,18 +1,5 @@
 import { Schema, model, models } from "mongoose";
 
-const TournamentGameSchema = new Schema({
-  game: { type: Schema.Types.ObjectId, ref: "Game", required: true },
-  entryFee: { type: Number, default: 0 },
-  format: {
-    type: String,
-    enum: ["single_elimination", "double_elimination", "round_robin"],
-    required: true,
-  },
-  teamBased: { type: Boolean, default: true },
-  minPlayers: { type: Number, required: true },
-  maxPlayers: { type: Number, required: true },
-});
-
 const TournamentStaffSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -38,10 +25,6 @@ const TournamentSchema = new Schema(
       type: String,
       enum: ["upcoming", "ongoing", "completed"],
       default: "upcoming",
-    },
-    games: {
-      type: [TournamentGameSchema],
-      validate: [(val) => val.length > 0, "At least one game is required"],
     },
     staff: [TournamentStaffSchema],
   },

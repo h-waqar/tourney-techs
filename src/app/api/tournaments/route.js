@@ -4,19 +4,16 @@ import { ApiError } from "@/utils/server/ApiError";
 import { requireAdmin } from "@/utils/server/roleGuards";
 import { parseForm } from "@/utils/server/parseForm";
 import { uploadOnCloudinary } from "@/utils/server/cloudinary";
+
 import { Tournament } from "@/models/Tournament";
-import "@/models/Game";
+import { TournamentGame } from "@/models/TournamentGame";
 
 // Disable body parsing for file uploads
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const config = { api: { bodyParser: false } };
 
 // ✅ POST /api/tournaments → Create a new tournament
 export const POST = asyncHandler(async (req) => {
-  const user = await requireAdmin(); // global admin or manager
+  const user = await requireAdmin(); // Only admin can create
 
   const { fields, files } = await parseForm(req);
 
@@ -25,14 +22,9 @@ export const POST = asyncHandler(async (req) => {
   const location = fields.location?.toString();
   const startDate = new Date(fields.startDate);
   const endDate = new Date(fields.endDate);
-  const isPublic = fields.isPublic === "false" ? false : true;
+  const isPublic = fields.isPublic !== "false"; // default true
 
-  const games = JSON.parse(fields.games || "[]");
-
-  // Optional: JSON array of users to assign as organizers/managers/support
-  const organizers = JSON.parse(fields.organizers || "[]");
-  const managers = JSON.parse(fields.managers || "[]");
-  const support = JSON.parse(fields.support || "[]");
+  const games = JSON.parse(fields.games || "[]"); // array of { game: ObjectId, format, teamBased, minPlayers, maxPlayers }
 
   if (!name || !location || isNaN(startDate) || isNaN(endDate)) {
     throw new ApiError(400, "Missing required fields");
@@ -42,35 +34,15 @@ export const POST = asyncHandler(async (req) => {
     throw new ApiError(400, "At least one game is required");
   }
 
-  for (const game of games) {
-    if (
-      !game.game ||
-      !game.format ||
-      typeof game.teamBased !== "boolean" ||
-      !game.minPlayers ||
-      !game.maxPlayers
-    ) {
-      throw new ApiError(400, "Invalid game configuration");
-    }
-  }
-
   // Upload banner if provided
   const bannerPath = Array.isArray(files.banner)
     ? files.banner[0]?.filepath
     : files.banner?.filepath;
-
   const bannerUpload = bannerPath
     ? await uploadOnCloudinary(bannerPath, "tournaments/banners")
     : null;
 
-  // Build staff array
-  const staff = [
-    { user: user._id, role: "owner" }, // creator is owner
-    ...organizers.map((id) => ({ user: id, role: "organizer" })),
-    ...managers.map((id) => ({ user: id, role: "manager" })),
-    ...support.map((id) => ({ user: id, role: "support" })),
-  ];
-
+  // Create tournament
   const tournament = await Tournament.create({
     name,
     description,
@@ -79,25 +51,53 @@ export const POST = asyncHandler(async (req) => {
     startDate,
     endDate,
     isPublic,
-    games,
     status: "upcoming",
-    staff,
+    staff: [{ user: user._id, role: "owner" }],
   });
 
+  // Create TournamentGame entries
+  const tournamentGames = await Promise.all(
+    games.map((g) =>
+      TournamentGame.create({
+        tournament: tournament._id,
+        game: g.game,
+        entryFee: g.entryFee || 0,
+        format: g.format,
+        teamBased: g.teamBased,
+        minPlayers: g.minPlayers,
+        maxPlayers: g.maxPlayers,
+      })
+    )
+  );
+
   return Response.json(
-    new ApiResponse(201, tournament, "Tournament created successfully")
+    new ApiResponse(
+      201,
+      { tournament, games: tournamentGames },
+      "Tournament created successfully"
+    )
   );
 });
 
-// ✅ GET /api/tournaments → Fetch all tournaments
+// ✅ GET /api/tournaments → Fetch all tournaments with games
 export const GET = asyncHandler(async () => {
-  const tournaments = await Tournament.find()
-    .populate("games.game", "name icon") // populate basic game info
-    .populate("staff.user", "username email") // populate staff users
-    .sort({ createdAt: -1 })
-    .lean();
+  const tournaments = await Tournament.find().sort({ createdAt: -1 }).lean();
+
+  // fetch games for each tournament
+  const tournamentsWithGames = await Promise.all(
+    tournaments.map(async (t) => {
+      const games = await TournamentGame.find({ tournament: t._id })
+        .populate("game", "name icon")
+        .lean();
+      return { ...t, games };
+    })
+  );
 
   return Response.json(
-    new ApiResponse(200, tournaments, "Tournaments fetched successfully")
+    new ApiResponse(
+      200,
+      tournamentsWithGames,
+      "Tournaments fetched successfully"
+    )
   );
 });
