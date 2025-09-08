@@ -5,7 +5,7 @@ import { useState } from "react";
 import DashboardNavbar from "@/components/ui/dashboard/DashboardNavbar";
 import DashboardSidebar from "@/components/ui/dashboard/DashboardSidebar";
 
-import { LayoutDashboard, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, BellDot } from "lucide-react";
 
 import UserGuard from "@/components/gard/user/UserGard";
 
@@ -14,6 +14,8 @@ const userNavItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/profile", label: "Profile", icon: Users },
   { href: "/dashboard/matches-overview", label: "Matches", icon: Users },
+  { href: "/dashboard/notifications", label: "Notifications", icon: BellDot },
+  { href: "/dashboard/teamup", label: "Team Up", icon: Users },
   { href: "/logOut", label: "Logout", icon: LogOut },
 ];
 
